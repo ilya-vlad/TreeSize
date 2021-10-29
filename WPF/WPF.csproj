@@ -6,4 +6,28 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="View\image\close.png" />
+    <None Remove="View\image\help.png" />
+    <None Remove="View\image\info.png" />
+    <None Remove="View\image\menu.png" />
+    <None Remove="View\image\open.png" />
+    <None Remove="View\image\replace.png" />
+    <None Remove="View\image\save.png" />
+    <None Remove="View\image\update.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Model\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="View\image\close.png" />
+    <Resource Include="View\image\help.png" />
+    <Resource Include="View\image\info.png" />
+    <Resource Include="View\image\menu.png" />
+    <Resource Include="View\image\open.png" />
+    <Resource Include="View\image\update.png" />
+  </ItemGroup>
+
 </Project>

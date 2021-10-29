@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,9 +21,24 @@ namespace WPF
     /// </summary>
     public partial class MainWindow : Window
     {
+        private List<DriveInfo> drives;
         public MainWindow()
         {
             InitializeComponent();
+            GetDrives();
+            FillComboBox();
+        }
+
+        private void GetDrives()
+        {
+            drives = DriveInfo.GetDrives().ToList();
+        }
+
+        private void FillComboBox()
+        {
+            foreach (var d in drives)
+                ComboBoxDrives.Items.Add($"{d.Name}");
+            ComboBoxDrives.SelectedIndex = 0;
         }
     }
 }
