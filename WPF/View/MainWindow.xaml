@@ -4,36 +4,86 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:WPF.ViewModel"
+        xmlns:m="clr-namespace:WPF.Models"
         xmlns:cmd="clr-namespace:WPF.Infrastructure.Command"
+        xmlns:fa="http://schemas.fontawesome.com/icons/"
         xmlns:local="clr-namespace:WPF"
         mc:Ignorable="d"
-        Title="{Binding Title}" Height="450" Width="800">
+        Title="{Binding Title.Name}" Height="450" Width="800">
     <Window.DataContext>
         <vm:MainWindowViewModel/>
     </Window.DataContext>
-    <DockPanel> 
-        <Ribbon DockPanel.Dock="Top" x:Name="rbMenu" SelectedIndex="0">
+    <StackPanel>
+        <Ribbon DockPanel.Dock="Top" x:Name="rbMenu">
             <Ribbon.ApplicationMenu>
-                <RibbonApplicationMenu SmallImageSource="image/menu.png">
-                    <RibbonApplicationMenuItem Header="Close" ImageSource="image/close.png">
+                <RibbonApplicationMenu>
+
+
+
+                    <RibbonApplicationMenuItem>
+                        <RibbonApplicationMenuItem.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <fa:ImageAwesome Icon="Solid_SignOutAlt" Height="20" Margin="0,0,10,0"/>
+                                <TextBlock Text="Close"/>
+                            </StackPanel>
+                        </RibbonApplicationMenuItem.Header>
                         <RibbonApplicationMenuItem.Command>
-                            <cmd:CloseApllicationCommand/>
+                            <cmd:CloseApplicationCommand/>
                         </RibbonApplicationMenuItem.Command>
-                    </RibbonApplicationMenuItem>                   
+
+
+                    </RibbonApplicationMenuItem>
+
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
             <RibbonTab Name="Tab1" Header="Main">
-                <RibbonGroup Name="Group1" Header="Select folder" Width="200">
-                    <!--<RibbonComboBox Name="ComboBoxDrives" Label="drive:" Width="150" 
-                                    SelectionBoxWidth="30" VerticalAlignment="Center"/>-->
-                    <ComboBox Name="ComboBoxDrives"  Width="150" IsEditable="True" IsReadOnly="True"/>
+                <RibbonGroup Name="Group1" Header="Folder" MinWidth="10">
                     <RibbonApplicationMenuItem Name="SelectFolder" ImageSource="image/open.png" Width="50"/>
+                    <RibbonMenuButton DataContext="{Binding .}" Label="drive" Width="50" ItemsSource="{Binding Drives}">
+                        <RibbonMenuButton.ItemContainerStyle>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="Command" Value="{Binding DataContext.ScanningFolderCommand,
+                                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RibbonMenuButton}}}"/>
+                                <!--<Setter Property="CommandParameter" Value="{Binding}" />-->
+                                <Setter Property="CommandParameter" Value="C:\Users\ilya\Desktop\Корень" />
+                            </Style>
+                        </RibbonMenuButton.ItemContainerStyle>
+                    </RibbonMenuButton>
                 </RibbonGroup>
 
             </RibbonTab>
+
+
         </Ribbon>
-        
-    </DockPanel>
+
+        <TreeView Name="Root" ItemsSource="{Binding Node}" Height="200" VerticalAlignment="Top" Background="LightGray" MinWidth="300">
+          
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal">
+                        <!--<StackPanel.Resources>
+                            <viewModel:SizeConverter x:Key="SizeConverter" />
+                        </StackPanel.Resources>-->
+
+                        <!--<Image Source="{Binding Path=ImagePath}" Height="16" Width="16" Margin="0 1 3 1" />-->
+
+                        <TextBlock Width="200" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                   Margin="0 0 10 0" />
+
+                        <TextBlock Width="100"
+                                   Text="{Binding Size, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        <StackPanel VerticalAlignment="Bottom" Orientation="Horizontal">
+            <Button Command="{Binding ScanningFolderCommand}" CommandParameter="D:\The Sims 4 Cottage Living" Content="Start" Width="50" Height="30"/>
+            <TextBlock Text="{Binding Node.Size}" Width="276" Height="33" VerticalAlignment="Top" Background="Gray"/>
+            <TextBox Name="path" Width="274" Height="36" Text="c:/" />
+        </StackPanel>
+
+
+    </StackPanel>
 
 
 </Window>

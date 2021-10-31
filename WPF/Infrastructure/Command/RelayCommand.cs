@@ -2,11 +2,11 @@
 
 namespace WPF.Infrastructure.Command
 {
-    internal class ActionCommand : BaseCommand
+    internal class RelayCommand : BaseCommand
     {
         private readonly Action<object> execute;
         private readonly Func<object, bool> canExecute;
-        public ActionCommand(Action<object> Execute, Func<object, bool> CanExecute = null)
+        public RelayCommand(Action<object> Execute, Func<object, bool> CanExecute = null)
         {
             execute = Execute ?? throw new ArgumentNullException(nameof(Execute));
             canExecute = CanExecute;

@@ -1,34 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
+using WPF.Infrastructure;
 using WPF.Infrastructure.Command;
+using WPF.Models;
+using WPF.Service;
 
 namespace WPF.ViewModel
 {
-    internal class MainWindowViewModel : ViewModel
+    internal class MainWindowViewModel : BasePropertyChanged
     {
-        private string title = "TreeSize";
-        public string Title
+        private Node node;
+        public Title Title { get; set; }
+
+        //private ObservableCollection<Node> children;
+
+        //public ObservableCollection<Node> Children
+        //{
+        //    get => children;
+        //    set => Set(ref children, value);
+        //}
+        public Node Node { get => node; set => Set(ref node, value); }
+        public List<string> Drives
         {
-            get => title;
-            set => Set(ref title, value);
+            get => folderAnalyzer.GetDrives();
         }
 
-        //public ICommand CloseApplicationCommand { get; }
+        public ICommand ScanningFolderCommand { get; }
 
-        //private void OnCloseApplicationCommandExecuted(object p) 
-        //{
-        //    Application.Current.Shutdown();
-        //}
-        //private bool CanCloseApplicationCommandExecute(object p) => true;
         public MainWindowViewModel()
         {
-            //CloseApplicationCommand = new ActionCommand(OnCloseApplicationCommandExecuted, CanCloseApplicationCommandExecute);
+            ScanningFolderCommand = new RelayCommand(OnScanningFolderCommandExecuted, CanScanningFolderCommandExecute);
+            folderAnalyzer = new FolderAnalyzer();
+            Title = new Title() { Name = "TreeSize Application" };
         }
+        private FolderAnalyzer folderAnalyzer;
+        private void OnScanningFolderCommandExecuted(object p)
+        {
+
+
+
+
+           Task.Run(async () =>
+           {
+               Node = new Node()
+               {
+                   Name = p.ToString(),
+                   FullName = p.ToString()
+               };
+               folderAnalyzer.CalculateFolderSize(Node, p.ToString());
+           });
+           
+        }
+        private bool CanScanningFolderCommandExecute(object p) => !string.IsNullOrEmpty((string)p);
     }
 }

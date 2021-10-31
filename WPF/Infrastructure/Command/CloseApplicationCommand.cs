@@ -2,7 +2,7 @@
 
 namespace WPF.Infrastructure.Command
 {
-    internal class CloseApllicationCommand : BaseCommand
+    internal class CloseApplicationCommand : BaseCommand
     {
         public override bool CanExecute(object parameter) => true;
 

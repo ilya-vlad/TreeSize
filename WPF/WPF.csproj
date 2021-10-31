@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Model\" />
+    <PackageReference Include="FontAwesome5" Version="2.1.4" />
   </ItemGroup>
 
   <ItemGroup>
