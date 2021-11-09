@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using WPF.Models;
+using WPF.ViewModel;
 
 namespace WPF.Service
 {
     public class FolderAnalyzer
     {
+        private readonly MainWindowViewModel _mainWindowViewModel;
+        public FolderAnalyzer(MainWindowViewModel mainWindowViewModel)
+        {
+            _mainWindowViewModel = mainWindowViewModel;
+        }
         public List<string> GetDrives()
         {
             return DriveInfo.GetDrives().Select(d => d.Name).ToList();
@@ -24,11 +30,12 @@ namespace WPF.Service
                 foreach (var filePath in GetFiles(path))
                 {
                     var file = new FileInfo(filePath);
-                    var newNode = new Node()
+                    var newNode = new Node(_mainWindowViewModel , node)
                     {
                         Name = file.Name,
                         FullName = file.FullName,
-                        Size = file.Length
+                        Size = file.Length,
+                        Level = node.Level - 1
                     };
                     node.Children.Add(newNode);                    
                     node.Size += file.Length;
@@ -37,10 +44,11 @@ namespace WPF.Service
                 foreach (var folderPath in GetDirectories(path))
                 {
                     var folder = new DirectoryInfo(folderPath);
-                    var newNode = new Node()
+                    var newNode = new Node(_mainWindowViewModel, node)
                     {
                         Name = folder.Name,
-                        FullName = folder.FullName                        
+                        FullName = folder.FullName,
+                        Level = node.Level + 1
                     };
 
                     newNode.Size += CalculateFolderSize(newNode, folderPath);                    
