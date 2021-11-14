@@ -27,7 +27,7 @@ namespace WPF
         public MainWindow()
         {
             InitializeComponent();
-            _tree.Model = new MainWindowViewModel();
+            //_tree.Model = new MainWindowViewModel();                        
         }
     }
 }

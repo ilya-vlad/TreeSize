@@ -21,9 +21,6 @@
         <Ribbon DockPanel.Dock="Top" x:Name="rbMenu">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu>
-
-
-
                     <RibbonApplicationMenuItem>
                         <RibbonApplicationMenuItem.Header>
                             <StackPanel Orientation="Horizontal">
@@ -49,7 +46,7 @@
                                 <Setter Property="Command" Value="{Binding DataContext.ScanningFolderCommand,
                                                                     RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RibbonMenuButton}}}"/>
                                 <!--<Setter Property="CommandParameter" Value="{Binding}" />-->
-                                <Setter Property="CommandParameter" Value="C:\Users\ilya\Desktop\Корень" />
+                                <Setter Property="CommandParameter" Value="C:\Windows\System32\drivers" />
                             </Style>
                         </RibbonMenuButton.ItemContainerStyle>
                     </RibbonMenuButton>
@@ -58,19 +55,13 @@
             </RibbonTab>
         </Ribbon>
 
-        
-        
-        
-       
-
-
-
-
-        <tree:TreeList Name="_tree">        
+        <tree:TreeList Name="_tree">
+            <tree:TreeList.Model>
+                <vm:MainWindowViewModel/>
+            </tree:TreeList.Model>
             <tree:TreeList.View>
                 <GridView>
                     <GridView.Columns>
-
                         <GridViewColumn Width="400" Header="Name">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
@@ -83,9 +74,8 @@
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Size" Width="50" DisplayMemberBinding="{Binding Size}"/>
+                        <GridViewColumn Header="Size" Width="100"  DisplayMemberBinding="{Binding Size}"/>
                         
-
                     </GridView.Columns>
                 </GridView>
             </tree:TreeList.View>

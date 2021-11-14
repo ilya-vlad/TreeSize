@@ -25,10 +25,6 @@ namespace WPF.Service
             CalculateFolderSize(node);
             return dicNode[node.Id].Children;
         }
-
-
-
-
         public void CalculateFolderSize(Node node)
         {
 

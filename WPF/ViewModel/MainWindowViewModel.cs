@@ -1,4 +1,5 @@
 ﻿using Aga.Controls.Tree;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -31,7 +32,7 @@ namespace WPF.ViewModel
         public ICommand ScanningFolderCommand { get; }
         private void OnScanningFolderCommandExecuted(object p)
         {
-            Path = p.ToString();
+            Path = p.ToString();            
         }
 
         private bool CanScanningFolderCommandExecute(object p) => !string.IsNullOrEmpty((string)p);
@@ -40,8 +41,10 @@ namespace WPF.ViewModel
         {
             ScanningFolderCommand = new RelayCommand(OnScanningFolderCommandExecuted, CanScanningFolderCommandExecute);
             folderAnalyzer = new FolderAnalyzer();
-            Path = "c:/users/ilya/desktop/";
-            //Path = "d:/";
+
+            //Path = Environment.CurrentDirectory;
+            Path = @"C:\Windows\System32\drivers";
+
         }
         private FolderAnalyzer folderAnalyzer;
         
@@ -63,6 +66,8 @@ namespace WPF.ViewModel
             var node = parent as Node;
             return Directory.Exists(node.FullName);
         }
+
+        
     }
 
    
