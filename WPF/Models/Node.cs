@@ -22,7 +22,7 @@ namespace WPF.Models
 
         public TypeNode Type { get; set; }
         static private int _i;
-        public int Id { get; set; }
+        public int Id { get; }
         public List<Node> Children;
 
         public Node(string name, string fullName, TypeNode type, double size)

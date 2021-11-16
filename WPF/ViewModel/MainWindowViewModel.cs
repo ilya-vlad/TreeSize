@@ -17,22 +17,17 @@ namespace WPF.ViewModel
 {
     public class MainWindowViewModel : BasePropertyChanged, ITreeModel
     {
-        private string _path;
-        public string Path
-        {
-            get => _path;
-            set => Set(ref _path, value);
-        }
-       
+        private TreeNodeModel treeNodeModel { get; set; }
+
         public List<string> Drives
         {
-            get => folderAnalyzer.GetDrives();
+            get => treeNodeModel.Drives;
         }
 
         public ICommand ScanningFolderCommand { get; }
         private void OnScanningFolderCommandExecuted(object p)
         {
-            Path = p.ToString();            
+            treeNodeModel.SetRootPath(p.ToString());
         }
 
         private bool CanScanningFolderCommandExecute(object p) => !string.IsNullOrEmpty((string)p);
@@ -40,35 +35,21 @@ namespace WPF.ViewModel
         public MainWindowViewModel()
         {
             ScanningFolderCommand = new RelayCommand(OnScanningFolderCommandExecuted, CanScanningFolderCommandExecute);
-            folderAnalyzer = new FolderAnalyzer();
 
-            //Path = Environment.CurrentDirectory;
-            Path = @"C:\Windows\System32\drivers";
+            treeNodeModel = new TreeNodeModel();
 
+            
+            treeNodeModel.SetRootPath(@"C:\Windows\System32\drivers");
         }
-        private FolderAnalyzer folderAnalyzer;
         
-
         public IEnumerable GetChildren(object parent)
         {
-            var nodeParent = parent as Node;
-            if (nodeParent == null)
-            {
-                nodeParent = new Node(Path, Path, TypeNode.Folder, 0);
-            }
-            
-            Debug.WriteLine("Вызов GetChildren");
-            return folderAnalyzer.GetChildren(nodeParent);
+            return treeNodeModel.GetChildren(parent);
         }
 
         public bool HasChildren(object parent)
         {
-            var node = parent as Node;
-            return Directory.Exists(node.FullName);
+            return treeNodeModel.HasChildren(parent);
         }
-
-        
     }
-
-   
 }

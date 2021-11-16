@@ -10,10 +10,10 @@ namespace WPF.Service
 {
     public class FolderAnalyzer
     {
-        private Dictionary<int, Node> dicNode;
+        private Dictionary<int, Node> dictionaryNode;
         public FolderAnalyzer()
         {
-            dicNode = new Dictionary<int, Node>();
+            dictionaryNode = new Dictionary<int, Node>();
         }
         public List<string> GetDrives()
         {
@@ -23,15 +23,15 @@ namespace WPF.Service
         public IEnumerable<Node> GetChildren(Node node)
         {
             CalculateFolderSize(node);
-            return dicNode[node.Id].Children;
+            return dictionaryNode[node.Id].Children;
         }
         public void CalculateFolderSize(Node node)
         {
 
-            if (dicNode.ContainsKey(node.Id))
+            if (dictionaryNode.ContainsKey(node.Id))
                 return;
 
-            dicNode.Add(node.Id, node);
+            dictionaryNode.Add(node.Id, node);
 
             try
             {
@@ -43,8 +43,8 @@ namespace WPF.Service
                     node.Children.Add(newNode);
                     node.Size += newNode.Size;
 
-                    if (!dicNode.ContainsKey(newNode.Id))
-                        dicNode.Add(newNode.Id, newNode);
+                    if (!dictionaryNode.ContainsKey(newNode.Id))
+                        dictionaryNode.Add(newNode.Id, newNode);
                 }
 
                 foreach (var filePath in GetFiles(node.FullName))
@@ -58,8 +58,7 @@ namespace WPF.Service
             catch(UnauthorizedAccessException ex)
             {
                 Debug.WriteLine(ex.Message);
-            }
-                  
+            }  
         }
          
 

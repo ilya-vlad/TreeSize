@@ -24,7 +24,8 @@
                     <RibbonApplicationMenuItem>
                         <RibbonApplicationMenuItem.Header>
                             <StackPanel Orientation="Horizontal">
-                                <fa:ImageAwesome Icon="Solid_SignOutAlt" Height="20" Margin="0,0,10,0"/>
+                                <!--<fa:ImageAwesome Icon="Solid_SignOutAlt" Height="20" Margin="0,0,10,0"/>-->
+                                <Image Source="image/close.png"  Margin="0, 0, 5, 0" Width="20"/>
                                 <TextBlock Text="Close"/>
                             </StackPanel>
                         </RibbonApplicationMenuItem.Header>
@@ -39,14 +40,14 @@
             </Ribbon.ApplicationMenu>
             <RibbonTab Name="Tab1" Header="Main">
                 <RibbonGroup Name="Group1" Header="Folder" MinWidth="10">
-                    <RibbonApplicationMenuItem Name="SelectFolder" ImageSource="image/open.png" Width="50"/>
+                    <RibbonApplicationMenuItem Name="SelectFolder" ImageSource="image/open.png" Width="48"/>
                     <RibbonMenuButton DataContext="{Binding .}" Label="drive" Width="50" ItemsSource="{Binding Drives}">
                         <RibbonMenuButton.ItemContainerStyle>
                             <Style TargetType="MenuItem">
                                 <Setter Property="Command" Value="{Binding DataContext.ScanningFolderCommand,
                                                                     RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RibbonMenuButton}}}"/>
                                 <!--<Setter Property="CommandParameter" Value="{Binding}" />-->
-                                <Setter Property="CommandParameter" Value="C:\Windows\System32\drivers" />
+                                <Setter Property="CommandParameter" Value="C:\Users\ilya\Desktop\Корень" />
                             </Style>
                         </RibbonMenuButton.ItemContainerStyle>
                     </RibbonMenuButton>
