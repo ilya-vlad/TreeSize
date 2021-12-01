@@ -41,6 +41,7 @@ namespace WPF.Models
 
         public IEnumerable GetChildren(object parent)
         {
+            if (_pathRoot == null) return null;
             var nodeParent = parent as Node;
             if (nodeParent == null)
             {

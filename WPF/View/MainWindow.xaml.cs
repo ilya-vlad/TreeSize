@@ -26,7 +26,11 @@ namespace WPF
     {
         public MainWindow()
         {
-            InitializeComponent();            
-        }        
+            InitializeComponent();
+        }
+        private void btn_Click(object sender, RoutedEventArgs e)
+        {
+            _tree.UpdateNodes();
+        }
     }
 }

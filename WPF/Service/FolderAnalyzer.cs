@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using WPF.Models;
 using WPF.ViewModel;
 
@@ -17,7 +18,17 @@ namespace WPF.Service
         }
         public List<string> GetDrives()
         {
-            return DriveInfo.GetDrives().Select(d => d.Name).ToList();
+            //return DriveInfo.GetDrives().Select(d => d.Name).ToList();
+
+
+            var list = new List<string>();
+            var p = Directory.GetCurrentDirectory();
+            p = Directory.GetParent(p).FullName;
+            p = Directory.GetParent(p).FullName;
+            p = Directory.GetParent(p).FullName;
+            foreach (var e in Directory.GetDirectories(p))
+                list.Add(e);
+            return list;
         }
 
         public IEnumerable<Node> GetChildren(Node node)
