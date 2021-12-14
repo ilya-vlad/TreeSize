@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Aga.Controls.Tree;
 using WPF.Infrastructure;
 using WPF.Service;
 
@@ -14,41 +9,38 @@ namespace WPF.Models
 {
     public class TreeNodeModel : BasePropertyChanged
     {
-        private string _pathRoot;
-        public TreeList TreeList { get; set; }
+        private string _rootPath;
 
         private FolderAnalyzer folderAnalyzer;
-
-        public List<string> Drives
+        public TreeNodeModel(string rootPath)
         {
-            get => folderAnalyzer.GetDrives();
-        }
-        public TreeNodeModel()
-        {
-            TreeList = new TreeList();
             folderAnalyzer = new FolderAnalyzer();
+            _rootPath = rootPath;
         }
 
 
-        public void SetRootPath(string pathRoot)
+        public void SetRootPath(string rootPath)
         {
-            if(!string.IsNullOrEmpty(pathRoot))
+            if (!string.IsNullOrEmpty(rootPath))
             {
-                Set(ref _pathRoot, pathRoot);
-                TreeList.UpdateNodes();
+                Set(ref _rootPath, rootPath);
             }
         }
 
-        public IEnumerable GetChildren(object parent)
+        public IEnumerable GetChildrenNode(object parent)
         {
-            if (_pathRoot == null) return null;
-            var nodeParent = parent as Node;
-            if (nodeParent == null)
-            {
-                nodeParent = new Node(_pathRoot, _pathRoot, TypeNode.Folder, 0);
-            }
-            Debug.WriteLine("Вызов GetChildren");
-            return folderAnalyzer.GetChildren(nodeParent);
+            return null;
+            //if (_rootPath == null) return null;
+
+            //var nodeParent = parent as Node;
+            //if (parent == null)
+            //{
+            //    var dir = new DirectoryInfo(_rootPath);
+            //    nodeParent = new Node(dir.Name, dir.FullName, TypeNode.Folder, 0, null);
+            //    var p = new HierarchicalObservableCollection<Node> { folderAnalyzer.GetFolderInfo(nodeParent) };
+            //    return p;
+            //}
+            //return folderAnalyzer.GetFolderInfo(nodeParent).Children;
         }
 
         public bool HasChildren(object parent)
@@ -56,7 +48,5 @@ namespace WPF.Models
             var node = parent as Node;
             return node.Type == TypeNode.Folder && node.Children.Count > 0;
         }
-
-
     }
 }

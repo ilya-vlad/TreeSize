@@ -9,19 +9,21 @@
         xmlns:tree="clr-namespace:Aga.Controls.Tree;assembly=Aga.Controls"
         xmlns:service="clr-namespace:WPF.Service"        
         mc:Ignorable="d"
-        Title="TreeSize Application" Height="700" Width="800">
-    
-    <Window.DataContext>
-        <vm:MainWindowViewModel />
-    </Window.DataContext>
-    <Window.Resources>
-
-        <!--<vm:MainWindowViewModel x:Key="ViewModel"/>-->
+        Title="TreeSize Application" Height="550" Width="900">
+    <Window.Resources>        
         <service:ImageConverter x:Key="ImageConverter"/>
-
+        <service:SizeConverter x:Key="SizeConverter"/>
     </Window.Resources>
     
+    
+    
+    
     <DockPanel>
+        
+        
+        
+        
+        
         <Ribbon DockPanel.Dock="Top" x:Name="rbMenu">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu>
@@ -35,42 +37,34 @@
                         <RibbonApplicationMenuItem.Command>
                             <cmd:CloseApplicationCommand/>
                         </RibbonApplicationMenuItem.Command>
-
-
                     </RibbonApplicationMenuItem>
-
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
             <RibbonTab Name="Tab1" Header="Main">
                 <RibbonGroup Name="Group1" Header="Folder" MinWidth="10">
-                    <RibbonApplicationMenuItem Name="SelectFolder" ImageSource="image/open.png" Width="48"/>
-                    <RibbonMenuButton DataContext="{Binding .}" Label="drive" Width="50" ItemsSource="{Binding Drives}">
+                    <RibbonButton LargeImageSource="image/open.png" Width="50" Height="40" Command="{Binding DataContext.SelectFolderCommand,
+                                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+                    </RibbonButton>                    
+
+                    <RibbonMenuButton Label="Drive" Width="50" ItemsSource="{Binding Drives}">
                         <RibbonMenuButton.ItemContainerStyle>
                             <Style TargetType="MenuItem">
-                                <Setter Property="Command" Value="{Binding DataContext.ScanningFolderCommand,
-                                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type RibbonMenuButton}}}"/>
+                                <Setter Property="Command" Value="{Binding DataContext.SelectDriveCommand,
+                                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                                 <Setter Property="CommandParameter" Value="{Binding}" />
                             </Style>
                         </RibbonMenuButton.ItemContainerStyle>
-                    </RibbonMenuButton>
-                </RibbonGroup>
-                <RibbonGroup>
-                    <Button x:Name="button1" Height="30" Background="LightGray" Content="Скан" Click="btn_Click"/>
-                </RibbonGroup>
-
+                    </RibbonMenuButton>                    
+                </RibbonGroup>               
             </RibbonTab>
         </Ribbon>
 
-        <TextBlock Height="20"  DockPanel.Dock="Top">
-            <Run Text="Путь: "/>
-            <Run Text="{Binding PathRoot}" Foreground="Red"/>            
-        </TextBlock>
 
-        <tree:TreeList Name="_tree" DockPanel.Dock="Bottom"> 
-           
-            <tree:TreeList.Model>
-                <vm:MainWindowViewModel/>
-            </tree:TreeList.Model>
+       
+
+
+
+        <tree:TreeList Name="tree" DockPanel.Dock="Bottom">
             <tree:TreeList.View>
                 <GridView>
                     <GridView.Columns>
@@ -79,15 +73,32 @@
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
                                         <tree:RowExpander/>
+                                        
                                         <Image Source="{Binding Converter={StaticResource ImageConverter}}"  Margin="0, 0, 5, 0" Width="20" Height="20"/>                                        
                                         <TextBlock Text="{Binding Name}"></TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
+                                
+    
                             </GridViewColumn.CellTemplate>
+                            
                         </GridViewColumn>
 
-                        <GridViewColumn Header="Size" Width="100" DisplayMemberBinding="{Binding Size}"/>
-                        
+                        <GridViewColumn Header="Size" Width="100" DisplayMemberBinding="{Binding Size, Converter={StaticResource SizeConverter}}"/>
+                        <GridViewColumn Header="Folders" Width="50" DisplayMemberBinding="{Binding CountFolders}"/>
+                        <GridViewColumn Header="Files" Width="50" DisplayMemberBinding="{Binding CountFiles}"/>
+                        <GridViewColumn Header="% of Parent" Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>                                    
+                                    <Grid>
+                                        <ProgressBar Name="pbPercentOfParent" Width="100" Height="15"
+                                                     Minimum="0" Maximum="100" Value="{Binding PercentOfParent, Mode=OneWay}" />
+                                        <TextBlock Text="{Binding ElementName=pbPercentOfParent, Path=Value, StringFormat={}{0:f2}%}" 
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                     </GridView.Columns>
                 </GridView>
             </tree:TreeList.View>

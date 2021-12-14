@@ -19,10 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FontAwesome5" Version="2.1.4" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Resource Include="View\image\close.png" />
     <Resource Include="View\image\file.png" />
     <Resource Include="View\image\folder.png" />
@@ -31,6 +27,10 @@
 
   <ItemGroup>
     <Folder Include="lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ookii.Dialogs.Wpf" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

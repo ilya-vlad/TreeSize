@@ -1,88 +1,82 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using WPF.Models;
-using WPF.ViewModel;
 
 namespace WPF.Service
 {
     public class FolderAnalyzer
     {
-        private Dictionary<int, Node> dictionaryNode;
+        private SynchronizationContext context;
         public FolderAnalyzer()
         {
-            dictionaryNode = new Dictionary<int, Node>();
-        }
-        public List<string> GetDrives()
-        {
-            //return DriveInfo.GetDrives().Select(d => d.Name).ToList();
-
-
-            var list = new List<string>();
-            var p = Directory.GetCurrentDirectory();
-            p = Directory.GetParent(p).FullName;
-            p = Directory.GetParent(p).FullName;
-            p = Directory.GetParent(p).FullName;
-            foreach (var e in Directory.GetDirectories(p))
-                list.Add(e);
-            return list;
+            context = SynchronizationContext.Current;
+            ThreadPool.SetMaxThreads(8, 1000);
         }
 
-        public IEnumerable<Node> GetChildren(Node node)
-        {
-            CalculateFolderSize(node);
-            return dictionaryNode[node.Id].Children;
+        public void StartScan(Node node)
+        {            
+            //Debug.WriteLine($"MAIN id = {Thread.CurrentThread.ManagedThreadId}");
+            Task.Run(() => Scan(node, context));                      
         }
-        public void CalculateFolderSize(Node node)
+
+        public void Scan(Node node, SynchronizationContext uiContext)
         {
-
-            if (dictionaryNode.ContainsKey(node.Id))
-                return;
-
-            dictionaryNode.Add(node.Id, node);
-
+            //Debug.WriteLine($"id = {Thread.CurrentThread.ManagedThreadId}");            
             try
             {
-                foreach (var folderPath in GetDirectories(node.FullName))
-                {
-                    var folder = new DirectoryInfo(folderPath);
-                    var newNode = new Node(folder.Name, folder.FullName, TypeNode.Folder, 0);
-                    CalculateFolderSize(newNode);
-                    node.Children.Add(newNode);
-                    node.Size += newNode.Size;
-
-                    if (!dictionaryNode.ContainsKey(newNode.Id))
-                        dictionaryNode.Add(newNode.Id, newNode);
+                foreach (var folderPath in Directory.GetDirectories(node.FullName))
+                {                    
+                    var folderInfo = new NodeInfo(new DirectoryInfo(folderPath), node);
+                    uiContext.Post(AddNode, folderInfo);
                 }
 
-                foreach (var filePath in GetFiles(node.FullName))
+                foreach (var filePath in Directory.GetFiles(node.FullName))
                 {
-                    var file = new FileInfo(filePath);
-                    var newNode = new Node(file.Name, file.FullName, TypeNode.File, file.Length);
-                    node.Children.Add(newNode);
-                    node.Size += newNode.Size;
+                    var fileInfo = new NodeInfo(new FileInfo(filePath), node);
+                    uiContext.Post(AddNode, fileInfo);
                 }
+
             }
-            catch(UnauthorizedAccessException ex)
+            catch (Exception e)
             {
-                Debug.WriteLine(ex.Message);
-            }  
+                Debug.WriteLine(e.Message);
+            }                 
         }
-         
-
-        private string[] GetFiles(string path)
+        
+        private void AddFile(NodeInfo newNodeInfo)
         {
-            string[] files = Directory.GetFiles(path);
-            return files;
+            newNodeInfo.ParentNode.CountFiles++;
+            newNodeInfo.ParentNode.Size += ((FileInfo)newNodeInfo.Info).Length;
+            var newNode = new Node(newNodeInfo.Info.Name, newNodeInfo.Info.FullName, TypeNode.File, ((FileInfo)newNodeInfo.Info).Length, newNodeInfo.ParentNode);            
+            newNodeInfo.ParentNode.Children.Add(newNode);
         }
 
-        private string[] GetDirectories(string path)
-        {
-            string[] folders = Directory.GetDirectories(path);
-            return folders;
+        private void AddFolder(NodeInfo newNodeInfo)
+        {            
+            var newNode = new Node(newNodeInfo.Info.Name, newNodeInfo.Info.FullName, TypeNode.Folder, 0, newNodeInfo.ParentNode);
+            newNodeInfo.ParentNode.Children.Add(newNode);
+
+            Task.Run(() => Scan(newNode, context));            
+        }
+
+
+        private void AddNode(object nodeInfoObject)
+        {                        
+            var newNodeInfo = nodeInfoObject as NodeInfo;
+
+            if (newNodeInfo.Info is DirectoryInfo)
+            {
+                AddFolder(newNodeInfo);                
+            }
+            else
+            {
+                AddFile(newNodeInfo);                
+            }           
         }
     }
 }
