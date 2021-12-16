@@ -12,10 +12,10 @@ namespace WPF
         public MainWindow()
         {
             InitializeComponent();
-            var treeListVM = new TreeListViewModel(tree);
-            var mainVM = new MainViewModel(treeListVM);
-            DataContext = mainVM;
-            tree.Model = treeListVM;            
+            var treeListViewModel = new TreeListViewModel(tree);            
+            var mainViewModel = new MainViewModel(treeListViewModel);
+            DataContext = mainViewModel;
+            tree.Model = treeListViewModel;            
         }
     }
 }

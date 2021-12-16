@@ -22,8 +22,8 @@ namespace WPF.Models
 
         public TestModel(string rootPath)
         {
-            folderAnalyzer = new FolderAnalyzer();            
-            SetRootPath(rootPath);     
+            folderAnalyzer = new FolderAnalyzer();
+            SetRootPath(rootPath);
         } 
 
 
@@ -50,13 +50,11 @@ namespace WPF.Models
 
         public void MyVoid()
         {
+            Debug.WriteLine($"id thread = {Thread.CurrentThread.ManagedThreadId}");
             RootNode.Children.Add(new Node("1111", "s", TypeNode.Folder, 33, RootNode));
-
-            RootNode.Children.First().Children.Add(new Node("22222", "s", TypeNode.Folder, 33, RootNode.Children.First()));
-            //RootNode.Children.Add(new Node("1", "", TypeNode.Folder, 33, RootNode));
-            //RootNode.Children.First().Children.Add(new Node("1", "", TypeNode.Folder, 33, RootNode.Children.First()));
+            RootNode.Children.Add(new Node("1111", "s", TypeNode.Folder, 33, RootNode));
+            RootNode.Children.Add(new Node("1111", "s", TypeNode.Folder, 33, RootNode));
         }
-
 
         public bool HasChildren(Node node)
         {

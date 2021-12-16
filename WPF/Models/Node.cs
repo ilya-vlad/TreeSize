@@ -16,15 +16,15 @@ namespace WPF.Models
             set 
             {
                 Set(ref _size, value);
-                if (NodeParent != null)
-                {
-                    CalculatePercentOfParent();                    
-                }
-                if (Children != null)
-                {
-                    foreach (var child in Children)
-                        child.CalculatePercentOfParent();
-                }
+                //if (NodeParent != null)
+                //{
+                //    CalculatePercentOfParent();                    
+                //}
+                //if (Children != null)
+                //{
+                //    foreach (var child in Children)
+                //        child.CalculatePercentOfParent();
+                //}
             } 
         }
 
@@ -54,6 +54,24 @@ namespace WPF.Models
         static private int _i;
         public int Id { get; }
 
+
+        private double _percentOfParent;
+        public double PercentOfParent
+        {
+            get
+            {
+                if (NodeParent != null)
+                {
+                    //CalculatePercentOfParent();
+                    return _percentOfParent;
+                }
+                return 100;
+            }
+            set => Set(ref _percentOfParent, value);
+        }
+
+        public Node NodeParent { get; }
+
         public Node(string name, string fullName, TypeNode type, double size, Node nodeParent)
         {
             Name = name;
@@ -75,25 +93,6 @@ namespace WPF.Models
                 //Debug.WriteLine("asdasd");
             }
         }
-
-
-
-        private double _percentOfParent;
-        public double PercentOfParent
-        {
-            get 
-            {
-                if (NodeParent != null)
-                {
-                    //CalculatePercentOfParent();
-                    return _percentOfParent;
-                }
-                return 100;                 
-            } 
-            set => Set(ref _percentOfParent, value);
-        }
-
-        public Node NodeParent { get; }        
 
         private void CalculatePercentOfParent()
         {

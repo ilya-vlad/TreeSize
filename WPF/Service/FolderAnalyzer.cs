@@ -53,7 +53,7 @@ namespace WPF.Service
             newNodeInfo.ParentNode.CountFiles++;
             newNodeInfo.ParentNode.Size += ((FileInfo)newNodeInfo.Info).Length;
             var newNode = new Node(newNodeInfo.Info.Name, newNodeInfo.Info.FullName, TypeNode.File, ((FileInfo)newNodeInfo.Info).Length, newNodeInfo.ParentNode);            
-            newNodeInfo.ParentNode.Children.Add(newNode);
+            newNodeInfo.ParentNode.Children.Add(newNode);            
         }
 
         private void AddFolder(NodeInfo newNodeInfo)

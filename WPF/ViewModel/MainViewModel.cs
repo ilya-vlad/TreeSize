@@ -6,12 +6,13 @@ using System.Windows.Input;
 using WPF.Infrastructure.Command;
 using System.Windows.Forms;
 using System.Threading.Tasks;
+using WPF.Infrastructure;
 
 namespace WPF.ViewModel
 {
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : BasePropertyChanged
     {
-        public TreeListViewModel TreeListVM;
+        public TreeListViewModel TreeListViewModel;
         
         public string[] Drives
         {
@@ -26,11 +27,13 @@ namespace WPF.ViewModel
             //};
         }
 
+        #region Commands
+
         public ICommand SelectDriveCommand { get; }
         private void OnSelectDriveCommandExecuted(object p)
         {
-            TreeListVM.Root = p.ToString();
-            TreeListVM.UpdateTree();
+            TreeListViewModel.Root = p.ToString();
+            TreeListViewModel.UpdateTree();
         }
 
         private bool CanSelectDriveCommandExecute(object p) => !string.IsNullOrEmpty((string)p);
@@ -42,38 +45,19 @@ namespace WPF.ViewModel
             if (dialog.ShowDialog() != DialogResult.OK)
                 return;
 
+            TreeListViewModel.Root = dialog.SelectedPath;
+            TreeListViewModel.UpdateTree();
 
-
-
-            TreeListVM.Root = dialog.SelectedPath;
-            TreeListVM.UpdateTree();
-
-            //TreeListVM.testMODEL.MyVoid();
+            //TreeListViewModel.testModel.MyVoid();
         }
         private bool CanSelectFolderCommandExecute(object p) => true;
 
-        public MainViewModel(TreeListViewModel treeListVM)
+        #endregion
+        public MainViewModel(TreeListViewModel treeListViewModel)
         {
-            TreeListVM = treeListVM;
+            TreeListViewModel = treeListViewModel;
             SelectDriveCommand = new RelayCommand(OnSelectDriveCommandExecuted, CanSelectDriveCommandExecute);
             SelectFolderCommand = new RelayCommand(OnSelectFolderCommandExecuted, CanSelectFolderCommandExecute);
-        }
-
-
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        protected bool Set<T>(ref T field, T value, [CallerMemberName] string PropertyName = null)
-        {
-            if (Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(PropertyName);
-            return true;
         }
     }
 }

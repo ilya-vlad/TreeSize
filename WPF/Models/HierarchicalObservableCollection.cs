@@ -12,8 +12,8 @@ namespace WPF.Models
         static TimeSpan? delay;
         public HierarchicalObservableCollection()
         {
-            if(delay == null)   
-                delay = TimeSpan.FromSeconds(3);    
+            //if(delay == null)   
+            //    delay = TimeSpan.FromSeconds(3);    
             CollectionChanged += HierarchicalObservableCollection_CollectionChanged;
         }
 
@@ -30,16 +30,13 @@ namespace WPF.Models
 
         private void Children_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (lastUpdate == null || DateTime.Now - lastUpdate > delay)
-            {
-                lastUpdate = DateTime.Now;
-                Debug.WriteLine($"Children_PropertyChanged\t{lastUpdate.Value.TimeOfDay}");
-               
-
-            }
+            //if (lastUpdate == null || DateTime.Now - lastUpdate > delay)
+            //{
+            //    lastUpdate = DateTime.Now;
+            //    Debug.WriteLine($"Children_PropertyChanged\t{lastUpdate.Value.TimeOfDay}");   
+            //}
             NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, sender, sender, IndexOf((T)sender));
-            OnCollectionChanged(args);
-            //Debug.WriteLine("OnCollectionChanged(args);");
+            OnCollectionChanged(args);            
         }
     }
 }

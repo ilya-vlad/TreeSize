@@ -7,14 +7,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using WPF.Infrastructure;
 using WPF.Models;
 
 namespace WPF.ViewModel
 {
-    public class TreeListViewModel : ITreeModel, INotifyPropertyChanged    {
-
+    public class TreeListViewModel : BasePropertyChanged, ITreeModel    
+    {
         private TreeNodeModel treeNodeModel { get; set; }
-        public TestModel testMODEL { get; set; }
+        public TestModel testModel { get; set; }
 
         private TreeList Tree;
 
@@ -29,18 +30,13 @@ namespace WPF.ViewModel
         public TreeListViewModel(TreeList tree)
         {
             Tree = tree;
-            //Root = Directory.GetCurrentDirectory();
-            //Root = @"C:\Users\ilya\Desktop";
-            //Root = @"D:\Android_studio";
-            //Root = @"D:\SteamLibrary";
-            Root = @"C:\Windows\apppatch";
-            //Root = @"C:\Users\ilya\Desktop\One file and folder";
-            //treeNodeModel = new TreeNodeModel(Root);
-            testMODEL = new TestModel(Root);
+            Root = Directory.GetCurrentDirectory();
+            testModel = new TestModel(Root);
         }
+
         public void UpdateTree()
         {
-            testMODEL.SetRootPath(Root);
+            testModel.SetRootPath(Root);
             //treeNodeModel.SetRootPath(Root);
             Tree.UpdateNodes();
         }
@@ -50,31 +46,14 @@ namespace WPF.ViewModel
             //var children = treeNodeModel.GetChildrenNode(parent);
             ////TEST = new ObservableCollection<Node>(children.OfType<Node>());
             //return children;
-            var children = testMODEL.GetChildren(parent);            
+            var children = testModel.GetChildren(parent);            
             return children;
         }
 
         public bool HasChildren(object parent)
         {
             var node = parent as Node;
-            return testMODEL.HasChildren(node);
-        }
-
-       
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-        protected bool Set<T>(ref T field, T value, [CallerMemberName] string PropertyName = null)
-        {
-            if (Equals(field, value)) return false;
-            field = value;
-            OnPropertyChanged(PropertyName);
-            //Debug.WriteLine(PropertyName + " = " + value);
-            return true;
+            return testModel.HasChildren(node);
         }
     }
 }
