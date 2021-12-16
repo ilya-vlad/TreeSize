@@ -18,6 +18,7 @@ namespace WPF.Models
         private string _rootPath;
 
         private FolderAnalyzer folderAnalyzer;        
+
         private Node RootNode;
 
         public TestModel(string rootPath)

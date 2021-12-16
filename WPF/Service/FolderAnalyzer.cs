@@ -11,17 +11,18 @@ namespace WPF.Service
 {
     public class FolderAnalyzer
     {
-        private SynchronizationContext context;
+        private SynchronizationContext _context;
+
         public FolderAnalyzer()
         {
-            context = SynchronizationContext.Current;
+            _context = SynchronizationContext.Current;
             ThreadPool.SetMaxThreads(8, 1000);
         }
 
         public void StartScan(Node node)
         {            
             //Debug.WriteLine($"MAIN id = {Thread.CurrentThread.ManagedThreadId}");
-            Task.Run(() => Scan(node, context));                      
+            Task.Run(() => Scan(node, _context));                      
         }
 
         public void Scan(Node node, SynchronizationContext uiContext)
@@ -61,7 +62,7 @@ namespace WPF.Service
             var newNode = new Node(newNodeInfo.Info.Name, newNodeInfo.Info.FullName, TypeNode.Folder, 0, newNodeInfo.ParentNode);
             newNodeInfo.ParentNode.Children.Add(newNode);
 
-            Task.Run(() => Scan(newNode, context));            
+            Task.Run(() => Scan(newNode, _context));            
         }
 
 

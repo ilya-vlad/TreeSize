@@ -10,6 +10,7 @@ namespace WPF.Models
     public class NodeInfo
     {
         public FileSystemInfo Info;
+
         public Node ParentNode;        
 
         public NodeInfo(FileInfo fileInfo, Node parentNode)

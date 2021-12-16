@@ -64,7 +64,7 @@
 
 
 
-        <tree:TreeList Name="tree" DockPanel.Dock="Bottom">
+        <tree:TreeList Name="_tree" DockPanel.Dock="Bottom">
             <tree:TreeList.View>
                 <GridView>
                     <GridView.Columns>

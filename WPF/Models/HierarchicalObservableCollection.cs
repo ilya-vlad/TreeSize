@@ -30,11 +30,6 @@ namespace WPF.Models
 
         private void Children_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            //if (lastUpdate == null || DateTime.Now - lastUpdate > delay)
-            //{
-            //    lastUpdate = DateTime.Now;
-            //    Debug.WriteLine($"Children_PropertyChanged\t{lastUpdate.Value.TimeOfDay}");   
-            //}
             NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, sender, sender, IndexOf((T)sender));
             OnCollectionChanged(args);            
         }

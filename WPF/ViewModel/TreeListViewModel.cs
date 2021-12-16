@@ -1,4 +1,5 @@
 ﻿using Aga.Controls.Tree;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
@@ -14,12 +15,7 @@ namespace WPF.ViewModel
 {
     public class TreeListViewModel : BasePropertyChanged, ITreeModel    
     {
-        private TreeNodeModel treeNodeModel { get; set; }
-        public TestModel testModel { get; set; }
-
-        private TreeList Tree;
-
-        private string _root;
+        public TestModel TestModel { get; set; }
 
         public string Root
         {
@@ -27,18 +23,28 @@ namespace WPF.ViewModel
             set => Set(ref _root, value);
         }
 
-        public TreeListViewModel(TreeList tree)
+        private string _root;
+
+        private TreeNodeModel _treeNodeModel { get; set; }
+
+        private TreeList _tree;
+
+        private readonly ILogger _logger;
+
+        public TreeListViewModel(ILogger logger, TreeList tree)
         {
-            Tree = tree;
+            _logger = logger;
+            _tree = tree;
             Root = Directory.GetCurrentDirectory();
-            testModel = new TestModel(Root);
+            TestModel = new TestModel(Root);
         }
 
         public void UpdateTree()
         {
-            testModel.SetRootPath(Root);
+            TestModel.SetRootPath(Root);
             //treeNodeModel.SetRootPath(Root);
-            Tree.UpdateNodes();
+            _tree.UpdateNodes();
+            _logger.LogInformation("Update TREE");
         }
         
         public IEnumerable GetChildren(object parent)
@@ -46,14 +52,14 @@ namespace WPF.ViewModel
             //var children = treeNodeModel.GetChildrenNode(parent);
             ////TEST = new ObservableCollection<Node>(children.OfType<Node>());
             //return children;
-            var children = testModel.GetChildren(parent);            
+            var children = TestModel.GetChildren(parent);            
             return children;
         }
 
         public bool HasChildren(object parent)
         {
             var node = parent as Node;
-            return testModel.HasChildren(node);
+            return TestModel.HasChildren(node);
         }
     }
 }

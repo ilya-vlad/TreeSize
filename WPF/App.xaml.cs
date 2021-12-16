@@ -1,7 +1,12 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,6 +18,38 @@ namespace WPF
     /// </summary>
     public partial class App : Application
     {
-       
+        private readonly IHost _host;
+        public App()
+        {
+            _host = Host.CreateDefaultBuilder()    
+                   .ConfigureLogging(builder =>
+                   {
+                       builder.ClearProviders();
+                       builder.AddDebug();                       
+                   })
+                   .ConfigureServices(services =>
+                   {
+                       services.AddSingleton<MainWindow>();
+                   })
+                   .Build();
+        }
+
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            _host.Start();
+
+            MainWindow = _host.Services.GetRequiredService<MainWindow>();
+            MainWindow.Show();
+
+            base.OnStartup(e);
+        }
+
+        protected override async void OnExit(ExitEventArgs e)
+        {
+            await _host.StopAsync();
+            _host.Dispose();
+
+            base.OnExit(e);
+        }
     }
 }

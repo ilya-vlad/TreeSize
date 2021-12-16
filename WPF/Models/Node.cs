@@ -9,7 +9,20 @@ namespace WPF.Models
 {
     public class Node : BasePropertyChanged
     {
-        private double _size;
+        public string FullName { get; }
+
+        public string Name { get; set; }
+
+        public TypeNode Type { get; }
+
+        public HierarchicalObservableCollection<Node> Children;
+
+        public Node NodeParent { get; }
+
+        public int Id { get; }
+
+        static private int _i;
+
         public double Size
         {
             get => _size;
@@ -28,34 +41,24 @@ namespace WPF.Models
             } 
         }
 
-        public string FullName { get; }
-
-        public string Name { get; set; }
-
-        public TypeNode Type { get; }
-
-        public HierarchicalObservableCollection<Node> Children;
-
-        private int _countFolders;
+        private double _size;
+       
         public int CountFolders
         {
             get => _countFolders;
             set => Set(ref _countFolders, value);
         }
 
-        private int _countFiles;
+        private int _countFolders;
+
         public int CountFiles
         {
             get => _countFiles;
             set => Set(ref _countFiles, value);
         }
 
+        private int _countFiles;
 
-        static private int _i;
-        public int Id { get; }
-
-
-        private double _percentOfParent;
         public double PercentOfParent
         {
             get
@@ -69,8 +72,7 @@ namespace WPF.Models
             }
             set => Set(ref _percentOfParent, value);
         }
-
-        public Node NodeParent { get; }
+        private double _percentOfParent;
 
         public Node(string name, string fullName, TypeNode type, double size, Node nodeParent)
         {
@@ -93,7 +95,6 @@ namespace WPF.Models
                 //Debug.WriteLine("asdasd");
             }
         }
-
         private void CalculatePercentOfParent()
         {
             PercentOfParent = Math.Round(Size / NodeParent.Size * 100, 2);
