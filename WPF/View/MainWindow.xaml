@@ -7,22 +7,15 @@
         xmlns:m="clr-namespace:WPF.Models"
         xmlns:cmd="clr-namespace:WPF.Infrastructure.Command"        
         xmlns:tree="clr-namespace:Aga.Controls.Tree;assembly=Aga.Controls"
-        xmlns:service="clr-namespace:WPF.Service"        
+        xmlns:service="clr-namespace:WPF.Service"
         mc:Ignorable="d"
-        Title="TreeSize Application" Height="550" Width="900">
+        Title="TreeSize Application" Height="500" Width="800">
     <Window.Resources>        
         <service:ImageConverter x:Key="ImageConverter"/>
         <service:SizeConverter x:Key="SizeConverter"/>
     </Window.Resources>
     
-    
-    
-    
     <DockPanel>
-        
-        
-        
-        
         
         <Ribbon DockPanel.Dock="Top" x:Name="rbMenu">
             <Ribbon.ApplicationMenu>
@@ -42,58 +35,76 @@
             </Ribbon.ApplicationMenu>
             <RibbonTab Name="Tab1" Header="Main">
                 <RibbonGroup Name="Group1" Header="Folder" MinWidth="10">
-                    <RibbonButton LargeImageSource="image/open.png" Width="50" Height="40" Command="{Binding DataContext.SelectFolderCommand,
-                                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+                    <RibbonButton LargeImageSource="image/open.png" Width="50" Height="40" Command="{Binding SelectFolderCommand}">
                     </RibbonButton>                    
 
                     <RibbonMenuButton Label="Drive" Width="50" ItemsSource="{Binding Drives}">
                         <RibbonMenuButton.ItemContainerStyle>
                             <Style TargetType="MenuItem">
-                                <Setter Property="Command" Value="{Binding DataContext.SelectDriveCommand,
-                                                                    RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                <Setter Property="Command" Value="{Binding DataContext.SelectDriveCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                                 <Setter Property="CommandParameter" Value="{Binding}" />
                             </Style>
                         </RibbonMenuButton.ItemContainerStyle>
                     </RibbonMenuButton>                    
-                </RibbonGroup>               
+                </RibbonGroup>
+                <RibbonGroup Header="Scan">
+                    <RibbonButton LargeImageSource="image/stop.png" Width="50" Height="40" 
+                                  IsEnabled="{Binding EnableButtonStopScan}"
+                                  Command="{Binding StopScanCommand}">
+                    </RibbonButton>
+                    <TextBlock Text="Stop scan"></TextBlock>
+                </RibbonGroup>                
             </RibbonTab>
         </Ribbon>
-
-
-       
-
-
-
+        
         <tree:TreeList Name="_tree" DockPanel.Dock="Bottom">
+            <tree:TreeList.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </tree:TreeList.ItemContainerStyle>
             <tree:TreeList.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="400" Header="Name">
+                        <GridViewColumn Width="390" Header="Name">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <tree:RowExpander/>
-                                        
+                                        <tree:RowExpander/>                                        
                                         <Image Source="{Binding Converter={StaticResource ImageConverter}}"  Margin="0, 0, 5, 0" Width="20" Height="20"/>                                        
                                         <TextBlock Text="{Binding Name}"></TextBlock>
                                     </StackPanel>
                                 </DataTemplate>
-                                
-    
                             </GridViewColumn.CellTemplate>
-                            
+                        </GridViewColumn>                       
+                        <GridViewColumn Header="Size" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Size, Converter={StaticResource SizeConverter}}" HorizontalAlignment="Right"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-
-                        <GridViewColumn Header="Size" Width="100" DisplayMemberBinding="{Binding Size, Converter={StaticResource SizeConverter}}"/>
-                        <GridViewColumn Header="Folders" Width="50" DisplayMemberBinding="{Binding CountFolders}"/>
-                        <GridViewColumn Header="Files" Width="50" DisplayMemberBinding="{Binding CountFiles}"/>
+                        <GridViewColumn Header="Folders" Width="50">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CountFolders}" HorizontalAlignment="Right"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Files" Width="50">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CountFiles}" HorizontalAlignment="Right"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>                        
                         <GridViewColumn Header="% of Parent" Width="Auto">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>                                    
                                     <Grid>
-                                        <ProgressBar Name="pbPercentOfParent" Width="100" Height="15"
+                                        <ProgressBar Name="pbPercentOfParent" Width="150" Height="15"
                                                      Minimum="0" Maximum="100" Value="{Binding PercentOfParent, Mode=OneWay}" />
-                                        <TextBlock Text="{Binding ElementName=pbPercentOfParent, Path=Value, StringFormat={}{0:f2}%}" 
+                                        <TextBlock Text="{Binding ElementName=pbPercentOfParent, Path=Value, StringFormat={}{0:f2} %}" 
                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Grid>
                                 </DataTemplate>
@@ -105,6 +116,5 @@
         </tree:TreeList>
 
     </DockPanel>
-   
 
 </Window>

@@ -26,23 +26,14 @@ namespace WPF.Models
         public double Size
         {
             get => _size;
-            set 
+            set
             {
                 Set(ref _size, value);
-                //if (NodeParent != null)
-                //{
-                //    CalculatePercentOfParent();                    
-                //}
-                //if (Children != null)
-                //{
-                //    foreach (var child in Children)
-                //        child.CalculatePercentOfParent();
-                //}
-            } 
+            }
         }
 
         private double _size;
-       
+
         public int CountFolders
         {
             get => _countFolders;
@@ -65,13 +56,13 @@ namespace WPF.Models
             {
                 if (NodeParent != null)
                 {
-                    //CalculatePercentOfParent();
                     return _percentOfParent;
                 }
                 return 100;
             }
             set => Set(ref _percentOfParent, value);
         }
+
         private double _percentOfParent;
 
         public Node(string name, string fullName, TypeNode type, double size, Node nodeParent)
@@ -87,17 +78,17 @@ namespace WPF.Models
             Children.CollectionChanged += Children_CollectionChanged;
         }
 
+        public void CalculatePercentOfParent()
+        {
+            PercentOfParent = Math.Round(Size / NodeParent.Size * 100, 2);
+        }
+
         private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             if (NodeParent != null)
             {
                 OnPropertyChanged(nameof(NodeParent));
-                //Debug.WriteLine("asdasd");
             }
-        }
-        private void CalculatePercentOfParent()
-        {
-            PercentOfParent = Math.Round(Size / NodeParent.Size * 100, 2);
-        }
+        }        
     }
 }

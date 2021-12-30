@@ -8,6 +8,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using WPF.Infrastructure;
 using WPF.Models;
 
@@ -15,7 +17,7 @@ namespace WPF.ViewModel
 {
     public class TreeListViewModel : BasePropertyChanged, ITreeModel    
     {
-        public TestModel TestModel { get; set; }
+        public TreeNodeModel TreeNodeModel { get; set; }
 
         public string Root
         {
@@ -34,32 +36,40 @@ namespace WPF.ViewModel
         public TreeListViewModel(ILogger logger, TreeList tree)
         {
             _logger = logger;
-            _tree = tree;
-            Root = Directory.GetCurrentDirectory();
-            TestModel = new TestModel(Root);
+            _tree = tree;            
+            Root = Directory.GetCurrentDirectory();            
+            TreeNodeModel = new TreeNodeModel(Root, logger);
         }
 
         public void UpdateTree()
         {
-            TestModel.SetRootPath(Root);
-            //treeNodeModel.SetRootPath(Root);
+            TreeNodeModel.SetRootPath(Root);
+            TreeNodeModel.StartNewScan();               
             _tree.UpdateNodes();
             _logger.LogInformation("Update TREE");
         }
         
         public IEnumerable GetChildren(object parent)
-        {
-            //var children = treeNodeModel.GetChildrenNode(parent);
-            ////TEST = new ObservableCollection<Node>(children.OfType<Node>());
-            //return children;
-            var children = TestModel.GetChildren(parent);            
+        {            
+            var children = TreeNodeModel.GetChildren(parent);            
             return children;
         }
 
         public bool HasChildren(object parent)
         {
             var node = parent as Node;
-            return TestModel.HasChildren(node);
+            return TreeNodeModel.HasChildren(node);
+        }
+
+        public bool StatusScan()
+        {
+            return TreeNodeModel.CancelTokenSource != null && !TreeNodeModel.CancellationToken.IsCancellationRequested;            
+        }
+
+        public void CancelScan()
+        {
+            TreeNodeModel.CancelTokenSource.Cancel();
+            TreeNodeModel.CancelTokenSource = null;           
         }
     }
 }

@@ -8,12 +8,8 @@ namespace WPF.Models
 {
     public class HierarchicalObservableCollection<T> : ObservableCollection<T> where T : INotifyPropertyChanged
     {
-        static DateTime? lastUpdate;
-        static TimeSpan? delay;
         public HierarchicalObservableCollection()
-        {
-            //if(delay == null)   
-            //    delay = TimeSpan.FromSeconds(3);    
+        {           
             CollectionChanged += HierarchicalObservableCollection_CollectionChanged;
         }
 
@@ -31,7 +27,7 @@ namespace WPF.Models
         private void Children_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, sender, sender, IndexOf((T)sender));
-            OnCollectionChanged(args);            
+            OnCollectionChanged(args);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,73 +12,129 @@ namespace WPF.Service
 {
     public class FolderAnalyzer
     {
+        private CancellationToken _cancellationToken;
+
         private SynchronizationContext _context;
 
-        public FolderAnalyzer()
-        {
+        private readonly ILogger _logger;
+
+        public FolderAnalyzer(ILogger logger)
+        {            
+            _logger = logger;
             _context = SynchronizationContext.Current;
             ThreadPool.SetMaxThreads(8, 1000);
         }
 
-        public void StartScan(Node node)
-        {            
-            //Debug.WriteLine($"MAIN id = {Thread.CurrentThread.ManagedThreadId}");
-            Task.Run(() => Scan(node, _context));                      
+        public void StartScan(Node node, CancellationToken token)
+        {
+            _cancellationToken = token;               
+            Task.Run(() => Scan(node, _context), _cancellationToken);
         }
 
-        public void Scan(Node node, SynchronizationContext uiContext)
-        {
-            //Debug.WriteLine($"id = {Thread.CurrentThread.ManagedThreadId}");            
+        public Task Scan(Node node, SynchronizationContext uiContext)
+        {   
             try
             {
                 foreach (var folderPath in Directory.GetDirectories(node.FullName))
-                {                    
-                    var folderInfo = new NodeInfo(new DirectoryInfo(folderPath), node);
-                    uiContext.Post(AddNode, folderInfo);
+                {
+                    var dirInfo = new DirectoryInfo(folderPath);
+                    uiContext.Post(AddFolder, (dirInfo, node));
+                    Thread.Sleep(100);
                 }
 
+                List<FileInfo> listFiles = new();
                 foreach (var filePath in Directory.GetFiles(node.FullName))
                 {
-                    var fileInfo = new NodeInfo(new FileInfo(filePath), node);
-                    uiContext.Post(AddNode, fileInfo);
+                    listFiles.Add(new FileInfo(filePath));
                 }
-
+                uiContext.Post(AddFiles, (listFiles, node));
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-            }                 
-        }
-        
-        private void AddFile(NodeInfo newNodeInfo)
-        {
-            newNodeInfo.ParentNode.CountFiles++;
-            newNodeInfo.ParentNode.Size += ((FileInfo)newNodeInfo.Info).Length;
-            var newNode = new Node(newNodeInfo.Info.Name, newNodeInfo.Info.FullName, TypeNode.File, ((FileInfo)newNodeInfo.Info).Length, newNodeInfo.ParentNode);            
-            newNodeInfo.ParentNode.Children.Add(newNode);            
-        }
-
-        private void AddFolder(NodeInfo newNodeInfo)
-        {            
-            var newNode = new Node(newNodeInfo.Info.Name, newNodeInfo.Info.FullName, TypeNode.Folder, 0, newNodeInfo.ParentNode);
-            newNodeInfo.ParentNode.Children.Add(newNode);
-
-            Task.Run(() => Scan(newNode, _context));            
-        }
-
-
-        private void AddNode(object nodeInfoObject)
-        {                        
-            var newNodeInfo = nodeInfoObject as NodeInfo;
-
-            if (newNodeInfo.Info is DirectoryInfo)
-            {
-                AddFolder(newNodeInfo);                
             }
-            else
+            return Task.CompletedTask;
+        }
+
+        private void AddFolder(object dirInfoObject)
+        {
+            var dirInfo = (ValueTuple<DirectoryInfo, Node>)dirInfoObject;
+            var newNode = new Node(dirInfo.Item1.Name, dirInfo.Item1.FullName, TypeNode.Folder, 0, dirInfo.Item2);
+
+            dirInfo.Item2.Children.Add(newNode);
+
+            CalculationOfAttributesOfParentsOfFolder(newNode);
+            
+            Task.Run(() => Scan(newNode, _context), _cancellationToken);
+        }
+
+        private void AddFiles(object filesInfoObject)
+        {
+            var filesInfo = (ValueTuple<List<FileInfo>, Node>)filesInfoObject;
+            double commonSise = 0;            
+            foreach (var file in filesInfo.Item1)
             {
-                AddFile(newNodeInfo);                
+                var newNode = new Node(file.Name, file.FullName, TypeNode.File, file.Length, filesInfo.Item2);
+                filesInfo.Item2.Children.Add(newNode);
+                commonSise += file.Length;
+            }
+
+            CalculationOfAttributesOfParentsOfFiles(filesInfo.Item2, commonSise, filesInfo.Item1.Count);
+        }
+
+        private Task CalculationOfAttributesOfParentsOfFiles(Node node, double size, int countFiles)
+        {
+            Node parentNode = node;            
+            return Task.Run(() =>
+            {
+                while (!_cancellationToken.IsCancellationRequested && parentNode != null)
+                {
+                    lock (parentNode)
+                    {
+                        parentNode.Size += size;
+                        parentNode.CountFiles += countFiles;
+                        CalculatePercentOfParentForAllChildren(parentNode);
+                    }
+                    parentNode = parentNode.NodeParent;
+                }
+            }, _cancellationToken);
+        }
+
+        private Task CalculationOfAttributesOfParentsOfFolder(Node node)
+        {
+            Node parentNode = node.NodeParent;
+
+            return Task.Run(() =>
+            {
+                while (!_cancellationToken.IsCancellationRequested && parentNode != null)
+                {
+                    lock (node)
+                    {
+                        parentNode.CountFolders++;
+                    }
+                    parentNode = parentNode.NodeParent;
+                }
+            }, _cancellationToken);
+        }
+
+        private void CalculatePercentOfParentForAllChildren(Node node)
+        {
+            try
+            {
+                Parallel.ForEach(
+                    node.Children,
+                    new ParallelOptions { CancellationToken = _cancellationToken, MaxDegreeOfParallelism = 8 },
+                    CalculatePercentOfParentForChild);
+            }
+            catch(OperationCanceledException ex)
+            {
+                _logger.LogInformation(ex.Message);
             }           
+        }
+
+        private void CalculatePercentOfParentForChild(Node node)
+        {
+            node.CalculatePercentOfParent();           
         }
     }
 }

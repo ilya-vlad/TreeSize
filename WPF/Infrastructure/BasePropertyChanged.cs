@@ -15,9 +15,8 @@ namespace WPF.Infrastructure
         protected bool Set<T>(ref T field, T value, [CallerMemberName] string PropertyName = null)
         {
             if (Equals(field, value)) return false;
-            field = value;           
-            OnPropertyChanged(PropertyName);
-
+            field = value;
+            App.Current.Dispatcher.Invoke(() => OnPropertyChanged(PropertyName));
             return true;
         }
     }

@@ -15,6 +15,9 @@
     <None Remove="View\image\open.png" />
     <None Remove="View\image\replace.png" />
     <None Remove="View\image\save.png" />
+    <None Remove="View\image\stop.png" />
+    <None Remove="View\image\stop1.png" />
+    <None Remove="View\image\stop2.png" />
     <None Remove="View\image\update.png" />
   </ItemGroup>
 
@@ -23,6 +26,7 @@
     <Resource Include="View\image\file.png" />
     <Resource Include="View\image\folder.png" />
     <Resource Include="View\image\open.png" />
+    <Resource Include="View\image\stop.png" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,7 +2,8 @@
 using System.Windows;
 using WPF.ViewModel;
 using Microsoft.Extensions.Logging;
-
+using System.Linq;
+using WPF.Models;
 
 namespace WPF
 {
@@ -11,12 +12,13 @@ namespace WPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ILogger _logger;
+        private readonly ILogger _logger;
+        
         public MainWindow(ILogger<MainWindow> logger)
         {
             _logger = logger;
 
-            InitializeComponent();
+            InitializeComponent();            
 
             var treeListViewModel = new TreeListViewModel(_logger, _tree);                  
             var mainViewModel = new MainViewModel(_logger, treeListViewModel);
