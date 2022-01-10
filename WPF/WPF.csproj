@@ -8,13 +8,24 @@
 
   <ItemGroup>
     <None Remove="Aga.Controls.dll" />
+    <None Remove="View\image\auto.png" />
     <None Remove="View\image\close.png" />
+    <None Remove="View\image\collapse.png" />
+    <None Remove="View\image\drive.png" />
+    <None Remove="View\image\expand.png" />
     <None Remove="View\image\file.png" />
+    <None Remove="View\image\files.png" />
     <None Remove="View\image\folder.png" />
+    <None Remove="View\image\gb.png" />
+    <None Remove="View\image\kb.png" />
+    <None Remove="View\image\mb.png" />
     <None Remove="View\image\menu.png" />
     <None Remove="View\image\open.png" />
+    <None Remove="View\image\percentage.png" />
+    <None Remove="View\image\refresh.png" />
     <None Remove="View\image\replace.png" />
     <None Remove="View\image\save.png" />
+    <None Remove="View\image\size.png" />
     <None Remove="View\image\stop.png" />
     <None Remove="View\image\stop1.png" />
     <None Remove="View\image\stop2.png" />
@@ -22,10 +33,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="View\image\auto.png" />
     <Resource Include="View\image\close.png" />
+    <Resource Include="View\image\collapse.png" />
+    <Resource Include="View\image\drive.png" />
+    <Resource Include="View\image\expand.png" />
     <Resource Include="View\image\file.png" />
+    <Resource Include="View\image\files.png" />
     <Resource Include="View\image\folder.png" />
+    <Resource Include="View\image\gb.png" />
+    <Resource Include="View\image\kb.png" />
+    <Resource Include="View\image\mb.png" />
     <Resource Include="View\image\open.png" />
+    <Resource Include="View\image\percentage.png" />
+    <Resource Include="View\image\refresh.png" />
+    <Resource Include="View\image\size.png" />
     <Resource Include="View\image\stop.png" />
   </ItemGroup>
 

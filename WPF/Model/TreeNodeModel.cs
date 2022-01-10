@@ -2,10 +2,10 @@
 using System;
 using System.Collections;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using WPF.Infrastructure;
 using WPF.Service;
+using WPF.Common;
 
 namespace WPF.Models
 {
@@ -57,7 +57,9 @@ namespace WPF.Models
             {                
                 return RootNode.Children;
             }
-            return (parent as Node).Children;
+            var node = parent as Node;
+            _logger.LogInformation($"Expanded node: {node.FullName}");
+            return node.Children;
         }
 
         public bool HasChildren(Node node)
@@ -73,7 +75,7 @@ namespace WPF.Models
             }
 
             var dir = new DirectoryInfo(_rootPath);
-            RootNode = new Node(dir.Name, dir.FullName, TypeNode.Folder, 0, null);
+            RootNode = new Node(dir.Name, dir.FullName, TypeNode.Folder, 0, 0, DateTime.MinValue, null);
         }
     }
 }

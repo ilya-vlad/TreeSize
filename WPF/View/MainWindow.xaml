@@ -1,63 +1,132 @@
-﻿<Window x:Class="WPF.MainWindow"
+﻿<RibbonWindow x:Class="WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:WPF.ViewModel"
-        xmlns:m="clr-namespace:WPF.Models"
-        xmlns:cmd="clr-namespace:WPF.Infrastructure.Command"        
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"        
+        xmlns:common="clr-namespace:WPF.Common"        
         xmlns:tree="clr-namespace:Aga.Controls.Tree;assembly=Aga.Controls"
-        xmlns:service="clr-namespace:WPF.Service"
+        xmlns:converters="clr-namespace:WPF.Service.Converters"
         mc:Ignorable="d"
-        Title="TreeSize Application" Height="500" Width="800">
-    <Window.Resources>        
-        <service:ImageConverter x:Key="ImageConverter"/>
-        <service:SizeConverter x:Key="SizeConverter"/>
-    </Window.Resources>
-    
+        Title="TreeSize Application" Height="600" Width="940">    
+    <Window.Resources>
+        <converters:ImageConverter x:Key="ImageConverter"/>
+        <converters:SizeConverter x:Key="SizeConverter"/>
+        <converters:ModeDisplayConverter x:Key="ModeDisplayConverter"/>
+        <converters:PrefixOfNameConverter x:Key="PrefixOfNameConverter"/>
+        <converters:SizeUnitConverter x:Key="SizeUnitConverter"/>
+    </Window.Resources>     
     <DockPanel>
-        
-        <Ribbon DockPanel.Dock="Top" x:Name="rbMenu">
+        <Ribbon DockPanel.Dock="Top">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu>
-                    <RibbonApplicationMenuItem>
+                    <RibbonApplicationMenuItem Command="{Binding CloseApplicationCommand}">
                         <RibbonApplicationMenuItem.Header>
                             <StackPanel Orientation="Horizontal">                                
                                 <Image Source="image/close.png"  Margin="0, 0, 5, 0" Width="20"/>
                                 <TextBlock Text="Close"/>
                             </StackPanel>
                         </RibbonApplicationMenuItem.Header>
-                        <RibbonApplicationMenuItem.Command>
-                            <cmd:CloseApplicationCommand/>
-                        </RibbonApplicationMenuItem.Command>
+                        
                     </RibbonApplicationMenuItem>
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
-            <RibbonTab Name="Tab1" Header="Main">
-                <RibbonGroup Name="Group1" Header="Folder" MinWidth="10">
-                    <RibbonButton LargeImageSource="image/open.png" Width="50" Height="40" Command="{Binding SelectFolderCommand}">
-                    </RibbonButton>                    
-
-                    <RibbonMenuButton Label="Drive" Width="50" ItemsSource="{Binding Drives}">
-                        <RibbonMenuButton.ItemContainerStyle>
-                            <Style TargetType="MenuItem">
+            <RibbonTab Name="HomeTab" Header="Home">
+                <RibbonGroup Header="Scan" MinWidth="10">
+                    <RibbonSplitButton Label="Select Directory" 
+                                       Command="{Binding SelectFolderCommand}"
+                                       LargeImageSource="image/open.png"
+                                       ItemsSource="{Binding Drives}">
+                        <RibbonSplitButton.ItemContainerStyle>
+                            <Style TargetType="MenuItem">                                
                                 <Setter Property="Command" Value="{Binding DataContext.SelectDriveCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
-                                <Setter Property="CommandParameter" Value="{Binding}" />
+                                <Setter Property="CommandParameter" Value="{Binding Name}" />
                             </Style>
-                        </RibbonMenuButton.ItemContainerStyle>
-                    </RibbonMenuButton>                    
-                </RibbonGroup>
-                <RibbonGroup Header="Scan">
-                    <RibbonButton LargeImageSource="image/stop.png" Width="50" Height="40" 
+                        </RibbonSplitButton.ItemContainerStyle>                        
+                        <RibbonSplitButton.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding VolumeLabel}"></Run>
+                                    <Run Text="{Binding StringFormat= ({0}), Path=Name, Mode=OneWay}"></Run>
+                                </TextBlock>
+                            </DataTemplate>                            
+                        </RibbonSplitButton.ItemTemplate>
+                    </RibbonSplitButton> 
+                    
+                    <RibbonButton Label="Stop Scan"
+                                  LargeImageSource="image/stop.png" 
                                   IsEnabled="{Binding EnableButtonStopScan}"
                                   Command="{Binding StopScanCommand}">
                     </RibbonButton>
-                    <TextBlock Text="Stop scan"></TextBlock>
-                </RibbonGroup>                
+                    <RibbonButton Label="Refresh"
+                                  LargeImageSource="image/refresh.png"                                   
+                                  Command="{Binding RefreshScanCommand}">
+                    </RibbonButton>
+                    
+                </RibbonGroup>
+                <RibbonGroup Header="Mode">
+                    <RibbonRadioButton Label="Size" LargeImageSource="image/size.png"
+                                       IsChecked="{Binding ModeDisplay, Converter={StaticResource ModeDisplayConverter},
+                                        ConverterParameter={x:Static common:ModeDisplay.Size}}"
+                                       Command="{Binding SetModeCommand}"
+                                       CommandParameter="{x:Static common:ModeDisplay.Size}"/>
+                    <RibbonRadioButton Label="Allocated Space" LargeImageSource="image/drive.png"
+                                       IsChecked="{Binding ModeDisplay, Converter={StaticResource ModeDisplayConverter},
+                                        ConverterParameter={x:Static common:ModeDisplay.Allocated}}"
+                                       Command="{Binding SetModeCommand}"
+                                       CommandParameter="{x:Static common:ModeDisplay.Allocated}"/>
+                    <RibbonRadioButton Label="File Count" LargeImageSource="image/files.png"
+                                       IsChecked="{Binding ModeDisplay, Converter={StaticResource ModeDisplayConverter},
+                                        ConverterParameter={x:Static common:ModeDisplay.File_Count}}"
+                                       Command="{Binding SetModeCommand}"
+                                       CommandParameter="{x:Static common:ModeDisplay.File_Count}"/>
+                    <RibbonRadioButton Label="Percent" LargeImageSource="image/percentage.png"
+                                       IsChecked="{Binding ModeDisplay, Converter={StaticResource ModeDisplayConverter},
+                                        ConverterParameter={x:Static common:ModeDisplay.Percent}}"
+                                       Command="{Binding SetModeCommand}"
+                                       CommandParameter="{x:Static common:ModeDisplay.Percent}"/>                    
+                </RibbonGroup>
+                <RibbonGroup Header="Unit">
+                    <RibbonRadioButton Label="Automatic Units" LargeImageSource="image/auto.png"
+                                       IsChecked="{Binding SizeUnit, Converter={StaticResource SizeUnitConverter},
+                                        ConverterParameter={x:Static common:SizeUnit.Auto}}"
+                                       Command="{Binding SetSizeUnitCommand}"
+                                       CommandParameter="{x:Static common:SizeUnit.Auto}"/>
+                    <RibbonRadioButton SmallImageSource="image/gb.png"
+                                       IsChecked="{Binding SizeUnit, Converter={StaticResource SizeUnitConverter},
+                                        ConverterParameter={x:Static common:SizeUnit.GB}}"
+                                       Command="{Binding SetSizeUnitCommand}"
+                                       CommandParameter="{x:Static common:SizeUnit.GB}"/>
+                    <RibbonRadioButton SmallImageSource="image/mb.png"
+                                       IsChecked="{Binding SizeUnit, Converter={StaticResource SizeUnitConverter},
+                                        ConverterParameter={x:Static common:SizeUnit.MB}}"
+                                       Command="{Binding SetSizeUnitCommand}"
+                                       CommandParameter="{x:Static common:SizeUnit.MB}"/>
+                    <RibbonRadioButton SmallImageSource="image/kb.png"
+                                       IsChecked="{Binding SizeUnit, Converter={StaticResource SizeUnitConverter},
+                                        ConverterParameter={x:Static common:SizeUnit.KB}}"
+                                       Command="{Binding SetSizeUnitCommand}"
+                                       CommandParameter="{x:Static common:SizeUnit.KB}"/>
+                </RibbonGroup>
+                <RibbonGroup Header="Expand">
+                    <RibbonMenuButton Label="Expand" LargeImageSource="image/expand.png">
+                        <RibbonMenuItem Header="To Level 1" Tag="{x:Static common:LevelExpension.Level1}" Click="ExpandItems_Click"/>
+                        <RibbonMenuItem Header="To Level 2" Tag="{x:Static common:LevelExpension.Level2}" Click="ExpandItems_Click"/>
+                        <RibbonMenuItem Header="To Level 3" Tag="{x:Static common:LevelExpension.Level3}" Click="ExpandItems_Click"/>
+                        <RibbonMenuItem Header="To Level 4" Tag="{x:Static common:LevelExpension.Level4}" Click="ExpandItems_Click"/>
+                        <RibbonMenuItem Header="To Level 5" Tag="{x:Static common:LevelExpension.Level5}" Click="ExpandItems_Click"/>
+                        <RibbonMenuItem Header="To Level 6" Tag="{x:Static common:LevelExpension.Level6}" Click="ExpandItems_Click"/>
+                        <RibbonSeparator />
+                        <RibbonMenuItem Header="Full Expand" ImageSource="image/expand.png" 
+                                        Tag="{x:Static common:LevelExpension.FullExpansion}" Click="ExpandItems_Click"/>
+                    </RibbonMenuButton>
+                </RibbonGroup>
+                <RibbonGroup Header="Collapse">
+                    <RibbonButton Label="Collapse" LargeImageSource="image/collapse.png" Click="CollapseAllNode_Click"/>
+                </RibbonGroup>
             </RibbonTab>
         </Ribbon>
-        
-        <tree:TreeList Name="_tree" DockPanel.Dock="Bottom">
+
+        <tree:TreeList x:Name="_tree" DockPanel.Dock="Bottom" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler">
             <tree:TreeList.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -66,43 +135,94 @@
             <tree:TreeList.View>
                 <GridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="390" Header="Name">
+                        <GridViewColumn Width="300">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Name" Tag="{x:Static common:ColumnSort.Name}"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <tree:RowExpander/>                                        
-                                        <Image Source="{Binding Converter={StaticResource ImageConverter}}"  Margin="0, 0, 5, 0" Width="20" Height="20"/>                                        
-                                        <TextBlock Text="{Binding Name}"></TextBlock>
+                                        <tree:RowExpander/>                                                                        
+                                        <Image Source="{Binding Type, Converter={StaticResource ImageConverter}}"  Margin="0, 0, 5, 0" Width="20" Height="20"/> 
+                                        <TextBlock TextAlignment="Right" Width="{Binding DataContext.WidthPrefix, RelativeSource={RelativeSource AncestorType=Window}}">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource PrefixOfNameConverter}">
+                                                    <Binding Path="."/>
+                                                    <Binding Path="DataContext.ModeDisplay" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                    <Binding Path="DataContext.SizeUnit" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                    <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding Name}"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>                       
-                        <GridViewColumn Header="Size" Width="100">
+                        <GridViewColumn Width="100">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Size" Tag="{x:Static common:ColumnSort.Size}"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Size, Converter={StaticResource SizeConverter}}" HorizontalAlignment="Right"/>
+                                    <TextBlock HorizontalAlignment="Right">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource SizeConverter}" >
+                                                <Binding Path="DataContext.SizeUnit" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="Size"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Folders" Width="50">
+
+                        <GridViewColumn Width="100">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Allocated" Tag="{x:Static common:ColumnSort.Allocated}"/>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock HorizontalAlignment="Right">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{StaticResource SizeConverter}" >
+                                                <Binding Path="DataContext.SizeUnit" RelativeSource="{RelativeSource AncestorType=Window}"/>
+                                                <Binding Path="Allocated"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        
+                        <GridViewColumn Width="75">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Folders" Tag="{x:Static common:ColumnSort.CountFolders}"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding CountFolders}" HorizontalAlignment="Right"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Files" Width="50">
+                        <GridViewColumn Width="60">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Files" Tag="{x:Static common:ColumnSort.CountFiles}"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding CountFiles}" HorizontalAlignment="Right"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>                        
-                        <GridViewColumn Header="% of Parent" Width="Auto">
+                        <GridViewColumn Width="150">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="% of Parent" Tag="{x:Static common:ColumnSort.PercentOfParent}"/>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>                                    
                                     <Grid>
-                                        <ProgressBar Name="pbPercentOfParent" Width="150" Height="15"
+                                        <ProgressBar Name="pbPercentOfParent"  Height="15"
                                                      Minimum="0" Maximum="100" Value="{Binding PercentOfParent, Mode=OneWay}" />
                                         <TextBlock Text="{Binding ElementName=pbPercentOfParent, Path=Value, StringFormat={}{0:f2} %}" 
                                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -110,11 +230,19 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
+                        <GridViewColumn Width="110">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Content="Last Modified" Tag="{x:Static common:ColumnSort.LastModified}"/>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding LastModified, StringFormat=dd.MM.yyyy}" HorizontalAlignment="Right"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                     </GridView.Columns>
                 </GridView>
             </tree:TreeList.View>
         </tree:TreeList>
-
     </DockPanel>
-
-</Window>
+</RibbonWindow>

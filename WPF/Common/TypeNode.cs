@@ -1,5 +1,5 @@
 ﻿
-namespace WPF.Models
+namespace WPF.Common
 {
     public enum TypeNode
     {

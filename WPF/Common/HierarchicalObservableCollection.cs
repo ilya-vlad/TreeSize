@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 
-namespace WPF.Models
+namespace WPF.Common
 {
     public class HierarchicalObservableCollection<T> : ObservableCollection<T> where T : INotifyPropertyChanged
     {

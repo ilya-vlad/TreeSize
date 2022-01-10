@@ -1,15 +1,8 @@
 ﻿using Aga.Controls.Tree;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+using WPF.Common;
 using WPF.Infrastructure;
 using WPF.Models;
 
@@ -17,8 +10,6 @@ namespace WPF.ViewModel
 {
     public class TreeListViewModel : BasePropertyChanged, ITreeModel    
     {
-        public TreeNodeModel TreeNodeModel { get; set; }
-
         public string Root
         {
             get => _root;
@@ -37,39 +28,38 @@ namespace WPF.ViewModel
         {
             _logger = logger;
             _tree = tree;            
-            Root = Directory.GetCurrentDirectory();            
-            TreeNodeModel = new TreeNodeModel(Root, logger);
+            Root = Directory.GetCurrentDirectory();
+            _treeNodeModel = new TreeNodeModel(Root, logger);
         }
 
         public void UpdateTree()
         {
-            TreeNodeModel.SetRootPath(Root);
-            TreeNodeModel.StartNewScan();               
-            _tree.UpdateNodes();
             _logger.LogInformation("Update TREE");
+            _treeNodeModel.SetRootPath(Root);
+            _treeNodeModel.StartNewScan();               
+            _tree.UpdateNodes();
         }
         
         public IEnumerable GetChildren(object parent)
         {            
-            var children = TreeNodeModel.GetChildren(parent);            
-            return children;
+            return _treeNodeModel.GetChildren(parent);
         }
 
         public bool HasChildren(object parent)
         {
             var node = parent as Node;
-            return TreeNodeModel.HasChildren(node);
+            return _treeNodeModel.HasChildren(node);
         }
 
         public bool StatusScan()
         {
-            return TreeNodeModel.CancelTokenSource != null && !TreeNodeModel.CancellationToken.IsCancellationRequested;            
+            return _treeNodeModel.CancelTokenSource != null && !_treeNodeModel.CancellationToken.IsCancellationRequested;            
         }
 
         public void CancelScan()
         {
-            TreeNodeModel.CancelTokenSource.Cancel();
-            TreeNodeModel.CancelTokenSource = null;           
+            _treeNodeModel.CancelTokenSource.Cancel();
+            _treeNodeModel.CancelTokenSource = null;           
         }
     }
 }

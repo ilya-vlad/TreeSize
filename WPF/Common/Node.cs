@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Linq;
 using WPF.Infrastructure;
 
-namespace WPF.Models
+namespace WPF.Common
 {
     public class Node : BasePropertyChanged
     {
@@ -33,6 +30,17 @@ namespace WPF.Models
         }
 
         private double _size;
+
+        public double Allocated
+        {
+            get => _allocated;
+            set
+            {
+                Set(ref _allocated, value);
+            }
+        }
+
+        private double _allocated;
 
         public int CountFolders
         {
@@ -65,15 +73,25 @@ namespace WPF.Models
 
         private double _percentOfParent;
 
-        public Node(string name, string fullName, TypeNode type, double size, Node nodeParent)
+        public DateTime LastModified
+        {
+            get => _lastModified;
+            set => Set(ref _lastModified, value);
+        }
+
+        private DateTime _lastModified;
+
+        public Node(string name, string fullName, TypeNode type, double size, double allocated, DateTime lastModified, Node nodeParent)
         {
             Name = name;
             FullName = fullName;
             Type = type;
             Size = size;
+            Allocated = allocated;
             Id = ++_i;
             Children = new HierarchicalObservableCollection<Node>();
             NodeParent = nodeParent;
+            LastModified = lastModified;
 
             Children.CollectionChanged += Children_CollectionChanged;
         }
