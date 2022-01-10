@@ -14,9 +14,14 @@
         <converters:ModeDisplayConverter x:Key="ModeDisplayConverter"/>
         <converters:PrefixOfNameConverter x:Key="PrefixOfNameConverter"/>
         <converters:SizeUnitConverter x:Key="SizeUnitConverter"/>
+        <converters:VisibilityInitialTextConverter x:Key="VisibilityInitialTextConverter"/>
     </Window.Resources>     
-    <DockPanel>
-        <Ribbon DockPanel.Dock="Top">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>            
+        </Grid.RowDefinitions>
+        <Ribbon Grid.Row="0">
             <Ribbon.ApplicationMenu>
                 <RibbonApplicationMenu>
                     <RibbonApplicationMenuItem Command="{Binding CloseApplicationCommand}">
@@ -125,8 +130,8 @@
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>
-
-        <tree:TreeList x:Name="_tree" DockPanel.Dock="Bottom" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler">
+        <Grid Grid.Row="1">
+            <tree:TreeList x:Name="_tree" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler">
             <tree:TreeList.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -142,8 +147,8 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
-                                        <tree:RowExpander/>                                                                        
-                                        <Image Source="{Binding Type, Converter={StaticResource ImageConverter}}"  Margin="0, 0, 5, 0" Width="20" Height="20"/> 
+                                        <tree:RowExpander/>
+                                        <Image Source="{Binding Type, Converter={StaticResource ImageConverter}}"  Margin="0, 0, 5, 0" Width="20" Height="20"/>
                                         <TextBlock TextAlignment="Right" Width="{Binding DataContext.WidthPrefix, RelativeSource={RelativeSource AncestorType=Window}}">
                                             <TextBlock.Text>
                                                 <MultiBinding Converter="{StaticResource PrefixOfNameConverter}">
@@ -158,7 +163,7 @@
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
-                        </GridViewColumn>                       
+                        </GridViewColumn>
                         <GridViewColumn Width="100">
                             <GridViewColumn.Header>
                                 <GridViewColumnHeader Content="Size" Tag="{x:Static common:ColumnSort.Size}"/>
@@ -194,7 +199,7 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        
+
                         <GridViewColumn Width="75">
                             <GridViewColumn.Header>
                                 <GridViewColumnHeader Content="Folders" Tag="{x:Static common:ColumnSort.CountFolders}"/>
@@ -214,13 +219,13 @@
                                     <TextBlock Text="{Binding CountFiles}" HorizontalAlignment="Right"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
-                        </GridViewColumn>                        
+                        </GridViewColumn>
                         <GridViewColumn Width="150">
                             <GridViewColumn.Header>
                                 <GridViewColumnHeader Content="% of Parent" Tag="{x:Static common:ColumnSort.PercentOfParent}"/>
                             </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
-                                <DataTemplate>                                    
+                                <DataTemplate>
                                     <Grid>
                                         <ProgressBar Name="pbPercentOfParent"  Height="15"
                                                      Minimum="0" Maximum="100" Value="{Binding PercentOfParent, Mode=OneWay}" />
@@ -243,6 +248,10 @@
                     </GridView.Columns>
                 </GridView>
             </tree:TreeList.View>
-        </tree:TreeList>
-    </DockPanel>
+            </tree:TreeList>
+            <TextBlock Padding="10,30" Visibility="{Binding ElementName=_tree, Path=HasItems, Converter={StaticResource VisibilityInitialTextConverter}}">        
+            To analyze your disk space usage, choose a drive or path from the "Scan" menu.
+            </TextBlock>
+        </Grid>
+    </Grid>   
 </RibbonWindow>

@@ -58,7 +58,7 @@ namespace WPF.Models
                 return RootNode.Children;
             }
             var node = parent as Node;
-            _logger.LogInformation($"Expanded node: {node.FullName}");
+            //_logger.LogInformation($"Expanded node: {node.FullName}");
             return node.Children;
         }
 

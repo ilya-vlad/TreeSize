@@ -34,7 +34,7 @@ namespace WPF
             var mainViewModel = new MainViewModel(_logger, treeListViewModel);
 
             DataContext = mainViewModel;
-            _tree.Model = treeListViewModel;
+            _tree.Model = treeListViewModel;            
         }
         
         private void ExpandItems_Click(object sender, RoutedEventArgs e)
