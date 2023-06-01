@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using WPF.Infrastructure;
 
@@ -12,74 +13,32 @@ namespace WPF.Common
 
         public TypeNode Type { get; }
 
-        public HierarchicalObservableCollection<Node> Children;
+        public List<Node> Children;
 
         public Node NodeParent { get; }
 
         public int Id { get; }
 
-        static private int _i;
+        private static int _i;
 
-        public double Size
-        {
-            get => _size;
-            set
-            {
-                Set(ref _size, value);
-            }
-        }
+        public double Size { get; set; }
 
-        private double _size;
+        public double Allocated { get; set; }
 
-        public double Allocated
-        {
-            get => _allocated;
-            set
-            {
-                Set(ref _allocated, value);
-            }
-        }
+        public int CountFolders { get; set; }
 
-        private double _allocated;
-
-        public int CountFolders
-        {
-            get => _countFolders;
-            set => Set(ref _countFolders, value);
-        }
-
-        private int _countFolders;
-
-        public int CountFiles
-        {
-            get => _countFiles;
-            set => Set(ref _countFiles, value);
-        }
-
-        private int _countFiles;
+        public int CountFiles { get; set; }
 
         public double PercentOfParent
         {
             get
             {
-                if (NodeParent != null)
-                {
-                    return _percentOfParent;
-                }
-                return 100;
+                if (NodeParent == null) return 100;
+                return Size != 0 ? Math.Round(Size / NodeParent.Size * 100, 2) : 0;
             }
-            set => Set(ref _percentOfParent, value);
         }
 
-        private double _percentOfParent;
-
-        public DateTime LastModified
-        {
-            get => _lastModified;
-            set => Set(ref _lastModified, value);
-        }
-
-        private DateTime _lastModified;
+        public DateTime LastModified { get; set; }
 
         public Node(string name, string fullName, TypeNode type, double size, double allocated, DateTime lastModified, Node nodeParent)
         {
@@ -89,24 +48,9 @@ namespace WPF.Common
             Size = size;
             Allocated = allocated;
             Id = ++_i;
-            Children = new HierarchicalObservableCollection<Node>();
+            Children = new List<Node>();
             NodeParent = nodeParent;
             LastModified = lastModified;
-
-            Children.CollectionChanged += Children_CollectionChanged;
         }
-
-        public void CalculatePercentOfParent()
-        {
-            PercentOfParent = Math.Round(Size / NodeParent.Size * 100, 2);
-        }
-
-        private void Children_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            if (NodeParent != null)
-            {
-                OnPropertyChanged(nameof(NodeParent));
-            }
-        }        
     }
 }

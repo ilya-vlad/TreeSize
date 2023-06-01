@@ -6,6 +6,7 @@
         xmlns:common="clr-namespace:WPF.Common"        
         xmlns:tree="clr-namespace:Aga.Controls.Tree;assembly=Aga.Controls"
         xmlns:converters="clr-namespace:WPF.Service.Converters"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         Title="TreeSize Application" Height="600" Width="940">    
     <Window.Resources>
@@ -36,7 +37,7 @@
                 </RibbonApplicationMenu>
             </Ribbon.ApplicationMenu>
             <RibbonTab Name="HomeTab" Header="Home">
-                <RibbonGroup Header="Scan" MinWidth="10">
+                <RibbonGroup Header="ScanNode" MinWidth="10">
                     <RibbonSplitButton Label="Select Directory" 
                                        Command="{Binding SelectFolderCommand}"
                                        LargeImageSource="image/open.png"
@@ -57,9 +58,9 @@
                         </RibbonSplitButton.ItemTemplate>
                     </RibbonSplitButton> 
                     
-                    <RibbonButton Label="Stop Scan"
+                    <RibbonButton Label="Stop"
                                   LargeImageSource="image/stop.png" 
-                                  IsEnabled="{Binding EnableButtonStopScan}"
+                                  IsEnabled="{Binding IsScanning}"
                                   Command="{Binding StopScanCommand}">
                     </RibbonButton>
                     <RibbonButton Label="Refresh"
@@ -131,7 +132,18 @@
             </RibbonTab>
         </Ribbon>
         <Grid Grid.Row="1">
-            <tree:TreeList x:Name="_tree" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsScanning}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+
+            </Grid.Style>
+
+            <tree:TreeList x:Name="_tree" GridViewColumnHeader.Click="GridViewColumnHeaderClickedHandler" >
             <tree:TreeList.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -250,8 +262,26 @@
             </tree:TreeList.View>
             </tree:TreeList>
             <TextBlock Padding="10,30" Visibility="{Binding ElementName=_tree, Path=HasItems, Converter={StaticResource VisibilityInitialTextConverter}}">        
-            To analyze your disk space usage, choose a drive or path from the "Scan" menu.
+            To analyze your disk space usage, choose a drive or path from the "ScanNode" menu.
             </TextBlock>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.Style>
+                <Style TargetType="Grid">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsScanning}" Value="False">
+                            <Setter Property="Visibility" Value="Collapsed"></Setter>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Grid.Style>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+            <fa:ImageAwesome Grid.Row="0" Icon="Spinner" Spin="{Binding IsScanning}" SpinDuration="4" Height="100" Foreground="LightSteelBlue"/>
+            
         </Grid>
     </Grid>   
 </RibbonWindow>

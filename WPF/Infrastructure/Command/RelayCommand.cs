@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace WPF.Infrastructure.Command
 {
@@ -16,6 +17,6 @@ namespace WPF.Infrastructure.Command
 
         public override bool CanExecute(object p) => canExecute?.Invoke(p) ?? true;
 
-        public override void Execute(object p) => execute(p);   
+        public override async void Execute(object p) => execute(p);   
     }
 }

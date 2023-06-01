@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using WPF.Infrastructure;
 using Microsoft.Extensions.Logging;
 using WPF.Common;
+using System.Threading.Tasks;
 
 namespace WPF.ViewModel
 {
@@ -40,13 +41,13 @@ namespace WPF.ViewModel
 
         private int _widthPrefix;
 
-        public bool EnableButtonStopScan
+        public bool IsScanning
         {
-            get => _enableButtonStopScan;
-            set => Set(ref _enableButtonStopScan, value);
+            get => _isScanning; 
+            set => Set(ref _isScanning, value);
         }
 
-        private bool _enableButtonStopScan;
+        public bool _isScanning;
 
         #region COMMANDS
 
@@ -78,27 +79,18 @@ namespace WPF.ViewModel
             ModeDisplay = ModeDisplay.Size;
             SizeUnit = SizeUnit.Auto;
 
-            SelectDriveCommand = new RelayCommand(OnSelectDriveCommandExecuted, CanSelectDriveCommandExecute);
-            SelectFolderCommand = new RelayCommand(OnSelectFolderCommandExecuted, CanSelectFolderCommandExecute);
+            SelectDriveCommand = new RelayCommandAsync(CanSelectDriveCommandExecute, OnSelectDriveCommandExecuted);
+            SelectFolderCommand = new RelayCommandAsync(CanSelectFolderCommandExecute, OnSelectFolderCommandExecutedAsync);
             StopScanCommand = new RelayCommand(StopScanCommandExecuted, StopScanCommandExecute);
-            RefreshScanCommand = new RelayCommand(RefreshScanCommandExecuted, RefreshScanCommandExecute);
+            RefreshScanCommand = new RelayCommandAsync(CanRefreshScanCommandExecute, RefreshScanCommandExecuted);
             SetModeCommand = new RelayCommand(SetModeCommandExecuted, SetModeCommandExecute);
             SetSizeUnitCommand = new RelayCommand(SetSizeUnitCommandExecuted, SetSizeUnitCommandExecute);
             CloseApplicationCommand = new RelayCommand(CloseApplicationCommandExecuted, CloseApplicationCommandExecute);
         }
 
-        private void OnSelectDriveCommandExecuted(object p)
-        {
-            EnableButtonStopScan = true;
-            _treeListViewModel.Root = p.ToString();
-            _treeListViewModel.UpdateTree();
+        private async Task<bool> CanSelectFolderCommandExecute(object p) => !IsScanning;
 
-            _logger.LogInformation($"Scan drive: {p}");
-        }
-
-        private bool CanSelectDriveCommandExecute(object p) => !string.IsNullOrEmpty((string)p);
-
-        private void OnSelectFolderCommandExecuted(object p)
+        public async Task OnSelectFolderCommandExecutedAsync(object parameter)
         {
             var dialog = new FolderBrowserDialog();
             if (dialog.ShowDialog() != DialogResult.OK)
@@ -106,31 +98,46 @@ namespace WPF.ViewModel
                 _logger.LogInformation($"Deselected directory");
                 return;
             }
-
-            EnableButtonStopScan = true;
+            IsScanning = true;
             _treeListViewModel.Root = dialog.SelectedPath;
             _logger.LogInformation($"Selected directory: {dialog.SelectedPath}");
 
-            _treeListViewModel.UpdateTree();
+            _ = await Task.Run(() => _treeListViewModel.UpdateTree().ConfigureAwait(false));
+
+            _logger.LogInformation($"Finish scan folder {dialog.SelectedPath}");
+            IsScanning = false;
         }
-        private bool CanSelectFolderCommandExecute(object p) => true;
+
+        private async Task OnSelectDriveCommandExecuted(object p)
+        {
+            IsScanning = true;
+            _treeListViewModel.Root = p.ToString();
+            _logger.LogInformation($"Selected drive: {p}");
+
+            _ = await Task.Run(() => _treeListViewModel.UpdateTree().ConfigureAwait(false));
+
+            _logger.LogInformation($"Finish scan drive: {p}");
+            IsScanning = false;
+        }
+
+        private async Task<bool> CanSelectDriveCommandExecute(object p) => !string.IsNullOrEmpty((string)p);
+        
+        private async Task RefreshScanCommandExecuted(object p)
+        {
+            _logger.LogInformation("Scanning Refresh");
+            IsScanning = true;
+            _ = await Task.Run(() => _treeListViewModel.UpdateTree().ConfigureAwait(false));
+            IsScanning = false;
+        }
+
+        private async Task<bool> CanRefreshScanCommandExecute(object p) => !IsScanning;
 
         private void StopScanCommandExecuted(object p)
         {
-            _logger.LogInformation("Scanning Stopped");
             _treeListViewModel.CancelScan();
-            EnableButtonStopScan = false;
         }
 
         private bool StopScanCommandExecute(object p) => true;
-
-        private void RefreshScanCommandExecuted(object p)
-        {
-            _logger.LogInformation("Scanning Refresh");
-            _treeListViewModel.UpdateTree();
-        }
-
-        private bool RefreshScanCommandExecute(object p) => true;
 
         private void SetModeCommandExecuted(object p)
         {

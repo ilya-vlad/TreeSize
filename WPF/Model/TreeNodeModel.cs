@@ -1,11 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using WPF.Infrastructure;
 using WPF.Service;
 using WPF.Common;
+using System.Threading.Tasks;
+using Aga.Controls.Tree;
 
 namespace WPF.Models
 {
@@ -23,22 +26,23 @@ namespace WPF.Models
 
         private readonly ILogger _logger;
 
-        public TreeNodeModel(string rootPath, ILogger logger)
-        {            
-            _logger = logger;                      
-            folderAnalyzer = new FolderAnalyzer(logger);
+        public TreeNodeModel(string rootPath, ILogger logger, DirectoryService directoryService)
+        {
+            _logger = logger;
+            folderAnalyzer = new FolderAnalyzer(logger, directoryService);
             SetRootPath(rootPath);
 
-            CreateRootNode();
+            //CreateRootNode();
         }
 
-        public void StartNewScan()
+        public async Task StartNewScan(TreeList tree)
         {
             CreateRootNode();
 
             CancelTokenSource = new CancellationTokenSource();
             CancellationToken = CancelTokenSource.Token;
-            folderAnalyzer.StartScan(RootNode, CancellationToken);
+            
+            await folderAnalyzer.StartScan(RootNode, CancellationToken).ConfigureAwait(false);
         }
 
         public void SetRootPath(string rootPath)
@@ -54,8 +58,11 @@ namespace WPF.Models
         public IEnumerable GetChildren(object parent)
         {
             if (parent == null)
-            {                
-                return RootNode.Children;
+            {
+                var nodes = new List<Node>();
+                if(RootNode != null) nodes.Add(RootNode);
+
+                return nodes;
             }
             var node = parent as Node;
             //_logger.LogInformation($"Expanded node: {node.FullName}");
@@ -75,7 +82,7 @@ namespace WPF.Models
             }
 
             var dir = new DirectoryInfo(_rootPath);
-            RootNode = new Node(dir.Name, dir.FullName, TypeNode.Folder, 0, 0, DateTime.MinValue, null);
+            RootNode = new Node(dir.Name, dir.FullName, TypeNode.Folder, 0, 0, dir.LastWriteTime, null);
         }
     }
 }

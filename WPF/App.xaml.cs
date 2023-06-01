@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.IO.Abstractions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Windows;
+using WPF.Service;
 
 namespace WPF
 {
@@ -23,6 +25,9 @@ namespace WPF
                    .ConfigureServices(services =>
                    {
                        services.AddSingleton<MainWindow>();
+                       services.AddSingleton<DirectoryService>();
+                       services.AddSingleton<IFileSystem, FileSystem>();
+
                    })
                    .Build();
         }

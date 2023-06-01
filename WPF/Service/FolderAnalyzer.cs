@@ -1,10 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
+﻿//using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Xml.Linq;
 using WPF.Common;
 
 namespace WPF.Service
@@ -13,143 +20,67 @@ namespace WPF.Service
     {
         private CancellationToken _cancellationToken;
 
-        private SynchronizationContext _context;
+        //private SynchronizationContext _context;
 
         private readonly ILogger _logger;
 
-        public FolderAnalyzer(ILogger logger)
-        {            
+        private readonly DirectoryService _directoryService;
+
+        public FolderAnalyzer(ILogger logger, DirectoryService directoryService)
+        {
             _logger = logger;
-            _context = SynchronizationContext.Current;
-            ThreadPool.SetMaxThreads(8, 1000);
+            _directoryService = directoryService;
         }
 
-        public void StartScan(Node node, CancellationToken token)
+        public async Task StartScan(Node node, CancellationToken token)
         {
             _cancellationToken = token;
             _logger.LogInformation("Scanning starts...");
 
-            Task.Run(() => Scan(node, _context), _cancellationToken);
+            await ScanNode(node, token).ConfigureAwait(false);
         }
 
-        public Task Scan(Node node, SynchronizationContext uiContext)
+        public async Task ScanNode(Node node, CancellationToken token)
         {   
             try
             {
-                foreach (var folderPath in Directory.GetDirectories(node.FullName))
+                var folders = _directoryService.GetDirectories(node.FullName);
+                foreach (var dirInfo in folders)
                 {
-                    var dirInfo = new DirectoryInfo(folderPath);
-                    uiContext.Post(AddFolder, (dirInfo, node));
-                    Thread.Sleep(50);
+                    var newFolderNode = new Node(dirInfo.Name, dirInfo.FullName, TypeNode.Folder, 0, 0,
+                        dirInfo.LastWriteTime, node);
+                    node.Children.Add(newFolderNode);
+                    await ScanNode(newFolderNode, token);
+
+                    node.Size += newFolderNode.Size;
+                    node.CountFiles += newFolderNode.CountFiles;
+                    node.CountFolders += newFolderNode.CountFolders + 1;
+                    node.Allocated += newFolderNode.Allocated;
+
+                    if (!token.IsCancellationRequested) continue;
+                    _logger.LogInformation("Scan stopped.");
+                    return;
                 }
 
-                List<FileInfo> listFiles = new();
-                foreach (var filePath in Directory.GetFiles(node.FullName))
+                var files = _directoryService.GetFiles(node.FullName);
+                foreach (var fileInfo in files)
                 {
-                    listFiles.Add(new FileInfo(filePath));
+                    var newFileNode = new Node(fileInfo.Name, fileInfo.FullName, TypeNode.File, fileInfo.Length, SizeDeterminerOnDisk.GetFileSizeOnDisk(fileInfo.FullName),
+                        fileInfo.LastWriteTime, node);
+                    node.Children.Add(newFileNode);
+                    node.CountFiles++;
+                    node.Size += newFileNode.Size;
+                    node.Allocated += newFileNode.Allocated;
+
+                    if (!token.IsCancellationRequested) continue;
+                    _logger.LogInformation("Scan stopped.");
+                    return;
                 }
-                uiContext.Post(AddFiles, (listFiles, node));
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
             }
-            return Task.CompletedTask;
-        }
-
-        private void AddFolder(object dirInfoObject)
-        {
-            var dirInfo = (ValueTuple<DirectoryInfo, Node>)dirInfoObject;
-            var newNode = new Node(dirInfo.Item1.Name, dirInfo.Item1.FullName, TypeNode.Folder, 0, 0, dirInfo.Item1.LastWriteTime, dirInfo.Item2);
-            
-            dirInfo.Item2.Children.Add(newNode);
-
-            CalculationOfAttributesOfParentsOfFolder(newNode);
-            
-            Task.Run(() => Scan(newNode, _context), _cancellationToken);
-
-            _logger.LogInformation($"Added new folder: {newNode.FullName}");
-        }
-
-        private void AddFiles(object filesInfoObject)
-        {
-            var filesInfo = (ValueTuple<List<FileInfo>, Node>)filesInfoObject;
-            double commonSize = 0;
-            double commonAllocated = 0;
-            foreach (var file in filesInfo.Item1)
-            {
-                var allocated = SizeDeterminerOnDisk.GetFileSizeOnDisk(file.FullName);
-                var newNode = new Node(file.Name, file.FullName, TypeNode.File, file.Length, allocated, file.LastWriteTime, filesInfo.Item2);
-                filesInfo.Item2.Children.Add(newNode);
-                commonSize += file.Length;
-                commonAllocated += allocated;
-
-                _logger.LogInformation($"Added new file: {newNode.FullName}");
-            }
-
-            CalculationOfAttributesOfParentsOfFiles(filesInfo.Item2, commonSize, commonAllocated, filesInfo.Item1.Count);
-        }
-
-        private Task CalculationOfAttributesOfParentsOfFiles(Node node, double size, double allocated, int countFiles)
-        {
-            Node parentNode = node;            
-            return Task.Run(() =>
-            {
-                while (!_cancellationToken.IsCancellationRequested && parentNode != null)
-                {
-                    lock (parentNode)
-                    {
-                        parentNode.Allocated += allocated;
-                        parentNode.Size += size;
-                        parentNode.CountFiles += countFiles;
-
-                        if(parentNode.LastModified < node.LastModified)
-                        {
-                            parentNode.LastModified = node.LastModified;
-                        }
-
-                        CalculatePercentOfParentForAllChildren(parentNode);
-                    }
-                    parentNode = parentNode.NodeParent;
-                }
-            }, _cancellationToken);
-        }
-
-        private Task CalculationOfAttributesOfParentsOfFolder(Node node)
-        {
-            Node parentNode = node.NodeParent;
-
-            return Task.Run(() =>
-            {
-                while (!_cancellationToken.IsCancellationRequested && parentNode != null)
-                {
-                    lock (node)
-                    {
-                        parentNode.CountFolders++;
-                    }
-                    parentNode = parentNode.NodeParent;
-                }
-            }, _cancellationToken);
-        }
-
-        private void CalculatePercentOfParentForAllChildren(Node node)
-        {
-            try
-            {
-                Parallel.ForEach(
-                    node.Children,
-                    new ParallelOptions { CancellationToken = _cancellationToken, MaxDegreeOfParallelism = 8 },
-                    CalculatePercentOfParentForChild);
-            }
-            catch(OperationCanceledException ex)
-            {
-                _logger.LogInformation(ex.Message);
-            }           
-        }
-
-        private void CalculatePercentOfParentForChild(Node node)
-        {
-            node.CalculatePercentOfParent();           
         }
     }
 }
