@@ -131,7 +131,7 @@
                 </RibbonGroup>
             </RibbonTab>
         </Ribbon>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" x:Name="TreeGrid">
             <Grid.Style>
                 <Style TargetType="Grid">
                     <Style.Triggers>

@@ -7,11 +7,13 @@ using System.Collections.Specialized;
 using Aga.Controls.Tree;
 using System.Windows.Controls;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Data;
 using WPF.Service;
 using System.Windows.Documents;
 using WPF.Common;
 using System.Threading.Tasks;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace WPF
 {
@@ -34,10 +36,25 @@ namespace WPF
             var treeListViewModel = new TreeListViewModel(_logger, _tree, directoryService);                  
             var mainViewModel = new MainViewModel(_logger, treeListViewModel);
 
-            
             DataContext = mainViewModel;
             _tree.Model = treeListViewModel;
+            TreeGrid.IsVisibleChanged += VisibleTreeGridChanged;
+        }
 
+        private void VisibleTreeGridChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (_listViewSortAdorner != null)
+            {
+                AdornerLayer.GetAdornerLayer(_lastHeaderClicked)?.Remove(_listViewSortAdorner);
+            }
+
+            _lastDirection = ListSortDirection.Descending;
+            _lastHeaderClicked = ((GridView)_tree.View).Columns[1].Header as GridViewColumnHeader;
+            _listViewSortAdorner = new SortAdorner(_lastHeaderClicked, _lastDirection);
+            var layer = AdornerLayer.GetAdornerLayer(_lastHeaderClicked);
+            if (layer == null) return;
+            layer.Add(_listViewSortAdorner);
+            Sort(ColumnSort.Size, _lastDirection);
         }
         
         private void ExpandItems_Click(object sender, RoutedEventArgs e)
@@ -126,11 +143,11 @@ namespace WPF
 
             if(_listViewSortAdorner != null)
             {
-                AdornerLayer.GetAdornerLayer(_lastHeaderClicked).Remove(_listViewSortAdorner);
+                AdornerLayer.GetAdornerLayer(_lastHeaderClicked)?.Remove(_listViewSortAdorner);
             }
 
             _listViewSortAdorner = new SortAdorner(_lastHeaderClicked, _lastDirection);            
-            AdornerLayer.GetAdornerLayer(_lastHeaderClicked).Add(_listViewSortAdorner);
+            AdornerLayer.GetAdornerLayer(_lastHeaderClicked)?.Add(_listViewSortAdorner);
         }
 
         private void Sort(ColumnSort sortBy, ListSortDirection direction)
